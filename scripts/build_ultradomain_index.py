@@ -10,6 +10,14 @@ from howie_rag.datasets.schemas import SourceDocumentRecord
 from howie_rag.datasets.ultradomain import source_records_to_documents
 
 
+def render_progress(current: int, total: int, width: int = 30) -> str:
+    if total <= 0:
+        return "[no work]"
+    completed = int(width * current / total)
+    bar = "#" * completed + "-" * (width - completed)
+    return f"[{bar}] {current}/{total}"
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print('Usage: python scripts/build_ultradomain_index.py processed/documents.jsonl output_dir')
@@ -19,24 +27,39 @@ def main() -> int:
     output_dir = Path(sys.argv[2])
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    print(f"Loading source records from: {source_documents_path}")
+    lines = [line for line in source_documents_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    total_records = len(lines)
     source_records = []
-    with source_documents_path.open(encoding="utf-8") as file_handle:
-        for line in file_handle:
-            stripped = line.strip()
-            if not stripped:
-                continue
-            source_records.append(SourceDocumentRecord(**json.loads(stripped)))
+    for index, line in enumerate(lines, start=1):
+        source_records.append(SourceDocumentRecord(**json.loads(line)))
+        if index == 1 or index == total_records or index % 100 == 0:
+            print(f"load  {render_progress(index, total_records)}")
 
-    documents = source_records_to_documents(source_records)
-    chunks = chunk_documents(documents)
+    print("Converting source records into classified Document objects...")
+    documents = []
+    for index, record in enumerate(source_records, start=1):
+        documents.extend(source_records_to_documents([record]))
+        if index == 1 or index == total_records or index % 100 == 0:
+            print(f"docs  {render_progress(index, total_records)}")
+
+    print("Chunking classified documents...")
+    chunks = []
+    total_documents = len(documents)
+    for index, document in enumerate(documents, start=1):
+        chunks.extend(chunk_documents([document]))
+        if index == 1 or index == total_documents or index % 100 == 0:
+            print(f"chunk {render_progress(index, total_documents)} | chunks so far={len(chunks)}")
 
     documents_path = output_dir / "documents_classified.jsonl"
     chunks_path = output_dir / "chunks.jsonl"
 
+    print("Writing classified documents...")
     with documents_path.open("w", encoding="utf-8") as file_handle:
         for document in documents:
             file_handle.write(document.model_dump_json() + "\n")
 
+    print("Writing chunks...")
     with chunks_path.open("w", encoding="utf-8") as file_handle:
         for chunk in chunks:
             file_handle.write(chunk.model_dump_json() + "\n")
