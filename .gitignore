@@ -1,0 +1,15 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+lit_review/
+UltraDomain Dataset/
+source_data/
+howie-data-ingestion/outputs/
+evaluation_results/
+ultradomain_processed/
+ultradomain_index/
+.DS_Store
+.idea/
+.vscode/
+*:Zone.Identifier

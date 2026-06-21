@@ -1,0 +1,391 @@
+id,question,intent,split,language,domain,source_type_hint,requires_context
+HOWIE-FAC-001,What is the sample size of the student mobility study?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-002,How many universities participated in the survey?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-003,What percentage of students reported financial difficulties?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-004,Which year was the EUROSTUDENT data collected?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-005,What is the response rate for the national student survey?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-006,How many countries are included in the comparative report?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-007,What is the average age of respondents in the study?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-008,Which institution published the report on higher education access?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-009,What share of first-generation students entered university?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-010,How many interviews were conducted for the qualitative study?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-011,What was the total number of valid survey responses?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-012,Which dataset was used to analyze doctoral career paths?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-013,What is the median monthly income of students in the sample?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-014,How many pages does the final report contain?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-015,Which indicator measures international student mobility?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-016,What proportion of students worked during the semester?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-017,When was the policy brief on student housing published?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-018,How many study programs were covered in the analysis?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-019,What was the reported dropout rate in the cohort?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-020,Which federal states were included in the German student survey?,FACT,train,en,higher_education_research,mixed,false
+HOWIE-FAC-021,What is the exact definition of educational background used here?,FACT,dev,en,higher_education_research,mixed,false
+HOWIE-FAC-022,How many female respondents are in the dataset?,FACT,dev,en,higher_education_research,mixed,false
+HOWIE-FAC-023,What percentage of students used public financial aid?,FACT,dev,en,higher_education_research,mixed,false
+HOWIE-FAC-024,What was the employment rate of graduates?,FACT,dev,en,higher_education_research,statistical_table,false
+HOWIE-FAC-025,What is the reported standard error for the estimate?,FACT,dev,en,higher_education_research,mixed,false
+HOWIE-FAC-026,How many doctoral candidates answered the questionnaire?,FACT,test,en,higher_education_research,mixed,false
+HOWIE-FAC-027,Which age group had the highest participation rate?,FACT,test,en,higher_education_research,mixed,false
+HOWIE-FAC-028,What was the funding source for this research project?,FACT,test,en,higher_education_research,mixed,false
+HOWIE-FAC-029,How many institutions contributed administrative data?,FACT,test,en,higher_education_research,mixed,false
+HOWIE-FAC-030,What is the value of the mobility rate in 2021?,FACT,test,en,higher_education_research,mixed,false
+HOWIE-SUM-001,Summarize the main findings of the student mobility report.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-002,What are the key takeaways from the study on student financing?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-003,Give me an overview of the findings on higher education access.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-004,Can you summarize the report in plain language?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-005,What are the most important results about international students?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-006,Provide a short summary of the chapter on study conditions.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-007,What does the publication say overall about doctoral careers?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-008,Summarize the evidence on social inequality in higher education.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-009,What are the central results of the survey?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-010,Give me a concise overview of the findings about student housing.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-011,What are the main conclusions of the policy brief?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-012,Summarize the study results for a non-expert audience.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-013,What are the headline findings from the latest report?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-014,Can you extract the key messages from this paper?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-015,What does the report mainly show about student employment?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-016,Summarize the research results in three bullet points.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-017,What is the overall picture from the data portal entry?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-018,Give me a brief synthesis of the results on study dropout.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-019,What are the major findings across the analyzed documents?,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-020,Summarize the section about learning conditions.,SUMMARY,train,en,higher_education_research,mixed,false
+HOWIE-SUM-021,What should I remember from this study?,SUMMARY,dev,en,higher_education_research,mixed,false
+HOWIE-SUM-022,Can you provide an executive summary of the report?,SUMMARY,dev,en,higher_education_research,mixed,false
+HOWIE-SUM-023,What are the core findings on academic staff careers?,SUMMARY,dev,en,higher_education_research,mixed,false
+HOWIE-SUM-024,Give me a compact overview of the results by topic.,SUMMARY,dev,en,higher_education_research,mixed,false
+HOWIE-SUM-025,What is the main result of the publication?,SUMMARY,dev,en,higher_education_research,mixed,false
+HOWIE-SUM-026,Summarize the findings from the tables and text together.,SUMMARY,test,en,higher_education_research,mixed,false
+HOWIE-SUM-027,What does this report reveal about student wellbeing?,SUMMARY,test,en,higher_education_research,mixed,false
+HOWIE-SUM-028,Can you summarize the evidence without too much detail?,SUMMARY,test,en,higher_education_research,mixed,false
+HOWIE-SUM-029,What are the most relevant findings for university managers?,SUMMARY,test,en,higher_education_research,mixed,false
+HOWIE-SUM-030,Give me the main points from the study in simple terms.,SUMMARY,test,en,higher_education_research,mixed,false
+HOWIE-COM-001,How does study A differ from study B in its findings?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-002,Compare the results for Germany and France.,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-003,What differences are reported between bachelor and master students?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-004,How do the 2018 and 2021 survey results compare?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-005,Compare student mobility patterns across countries.,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-006,How does the methodology differ between these two reports?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-007,What are the differences between universities and universities of applied sciences?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-008,Compare the findings for first-generation and continuing-generation students.,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-009,How do domestic and international students differ in financial stress?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-010,Which study reports higher dropout risks?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-011,Compare the results by gender.,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-012,How does the policy brief differ from the full research report?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-013,What changed between the previous and current data collection waves?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-014,Compare employment rates across fields of study.,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-015,How do survey-based findings differ from administrative data findings?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-016,What are the similarities between the two student finance studies?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-017,Which country shows stronger growth in student mobility?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-018,Compare the outcomes for rural and urban students.,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-019,How do the conclusions differ across the publications?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-020,What differences exist between qualitative and quantitative findings?,COMPARISON,train,en,higher_education_research,mixed,false
+HOWIE-COM-021,Compare the reported barriers for low-income and high-income students.,COMPARISON,dev,en,higher_education_research,mixed,false
+HOWIE-COM-022,How does student housing affordability vary by city type?,COMPARISON,dev,en,higher_education_research,mixed,false
+HOWIE-COM-023,Which dataset provides more detailed evidence?,COMPARISON,dev,en,higher_education_research,mixed,false
+HOWIE-COM-024,Compare the study design of EUROSTUDENT and the German student survey.,COMPARISON,dev,en,higher_education_research,mixed,false
+HOWIE-COM-025,How do findings differ between full-time and part-time students?,COMPARISON,dev,en,higher_education_research,mixed,false
+HOWIE-COM-026,What contrasts appear between policy recommendations and empirical findings?,COMPARISON,test,en,higher_education_research,mixed,false
+HOWIE-COM-027,Compare the indicators used in both reports.,COMPARISON,test,en,higher_education_research,mixed,false
+HOWIE-COM-028,How do doctoral candidates and postdocs differ in career uncertainty?,COMPARISON,test,en,higher_education_research,mixed,false
+HOWIE-COM-029,Which group experienced the largest increase in financial pressure?,COMPARISON,test,en,higher_education_research,mixed,false
+HOWIE-COM-030,What are the main differences across the three studies?,COMPARISON,test,en,higher_education_research,mixed,false
+HOWIE-MET-001,How was the data collected?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-002,What survey design was used in the study?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-003,Who were the participants in the student mobility survey?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-004,What sampling strategy did the researchers use?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-005,How were students recruited for the questionnaire?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-006,What is the methodological context of this report?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-007,Which variables were used to measure social background?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-008,How was international mobility operationalized?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-009,What data sources does the study rely on?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-010,Was the study cross-sectional or longitudinal?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-011,How were missing values handled in the analysis?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-012,What weighting procedure was applied to the survey data?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-013,Which statistical method was used to estimate the effects?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-014,What is the unit of analysis in the dataset?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-015,How were the interviews coded?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-016,What is the difference between the gross and net sample?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-017,Which population does the survey represent?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-018,How was study dropout defined in the analysis?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-019,What questionnaire items were used for financial hardship?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-020,How were country comparisons standardized?,METHOD_CONTEXT,train,en,higher_education_research,mixed,false
+HOWIE-MET-021,What is the source of the administrative data?,METHOD_CONTEXT,dev,en,higher_education_research,mixed,false
+HOWIE-MET-022,What time period does the dataset cover?,METHOD_CONTEXT,dev,en,higher_education_research,mixed,false
+HOWIE-MET-023,How were fields of study categorized?,METHOD_CONTEXT,dev,en,higher_education_research,mixed,false
+HOWIE-MET-024,What inclusion criteria were used for participants?,METHOD_CONTEXT,dev,en,higher_education_research,mixed,false
+HOWIE-MET-025,How were qualitative cases selected?,METHOD_CONTEXT,dev,en,higher_education_research,mixed,false
+HOWIE-MET-026,What model specification is used in the regression analysis?,METHOD_CONTEXT,test,en,higher_education_research,mixed,false
+HOWIE-MET-027,How were confidence intervals calculated?,METHOD_CONTEXT,test,en,higher_education_research,mixed,false
+HOWIE-MET-028,Which metadata describe the dataset?,METHOD_CONTEXT,test,en,higher_education_research,mixed,false
+HOWIE-MET-029,What does the report say about data quality checks?,METHOD_CONTEXT,test,en,higher_education_research,mixed,false
+HOWIE-MET-030,How was the indicator constructed?,METHOD_CONTEXT,test,en,higher_education_research,mixed,false
+HOWIE-LIM-001,What are the limitations of this study?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-002,What caveats should I consider when using these findings?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-003,Are there any biases in the survey sample?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-004,What weaknesses does the report mention?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-005,How reliable are the results for small subgroups?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-006,What uncertainty is associated with the estimates?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-007,Does the study discuss missing data as a limitation?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-008,What are the methodological constraints of the analysis?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-009,Can these findings be generalized to all students?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-010,What limitations apply to the country comparison?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-011,Are there risks of self-selection in the sample?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-012,What does the paper say about measurement error?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-013,Which findings should be interpreted cautiously?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-014,What are the limitations of using cross-sectional data here?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-015,Does the report warn against causal interpretation?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-016,What are the known data quality issues?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-017,Where might the evidence be incomplete?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-018,What are the boundaries of the study's conclusions?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-019,What potential confounders are not fully addressed?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-020,How does the study handle uncertainty in the results?,LIMITATION,train,en,higher_education_research,mixed,false
+HOWIE-LIM-021,What are the limits of the mobility indicator?,LIMITATION,dev,en,higher_education_research,mixed,false
+HOWIE-LIM-022,Does the analysis exclude any relevant student groups?,LIMITATION,dev,en,higher_education_research,mixed,false
+HOWIE-LIM-023,What limitations are caused by the questionnaire design?,LIMITATION,dev,en,higher_education_research,mixed,false
+HOWIE-LIM-024,Are the findings affected by non-response bias?,LIMITATION,dev,en,higher_education_research,mixed,false
+HOWIE-LIM-025,What should I be careful about when citing this result?,LIMITATION,dev,en,higher_education_research,mixed,false
+HOWIE-LIM-026,Which claims are not supported by the data?,LIMITATION,test,en,higher_education_research,mixed,false
+HOWIE-LIM-027,What are the weaknesses of the qualitative sample?,LIMITATION,test,en,higher_education_research,mixed,false
+HOWIE-LIM-028,Does the report mention comparability problems?,LIMITATION,test,en,higher_education_research,mixed,false
+HOWIE-LIM-029,What are the limitations of the policy recommendation?,LIMITATION,test,en,higher_education_research,mixed,false
+HOWIE-LIM-030,Where does the evidence remain inconclusive?,LIMITATION,test,en,higher_education_research,mixed,false
+HOWIE-TRE-001,What trend do we see in enrollment over time?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-002,How has student mobility changed since 2018?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-003,Are financial difficulties increasing or decreasing?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-004,What pattern appears in dropout rates across cohorts?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-005,How did international enrollment develop over the last decade?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-006,What changes are visible between the survey waves?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-007,Is there a long-term trend in student employment?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-008,How have living costs for students evolved?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-009,What trajectory is shown for first-generation student participation?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-010,Are differences between countries widening or narrowing?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-011,What pattern can be observed across age groups?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-012,How did doctoral career expectations change over time?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-013,What trend is visible in public financial aid usage?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-014,Do the data show seasonal patterns in applications?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-015,How has the share of part-time students changed?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-016,What development is reported for digital learning participation?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-017,Are housing problems becoming more common?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-018,What pattern is visible in field-of-study choices?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-019,How has student wellbeing changed across survey years?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-020,Is there a decline in study-abroad participation?,TREND_PATTERN,train,en,higher_education_research,mixed,false
+HOWIE-TRE-021,What trend appears in graduation rates?,TREND_PATTERN,dev,en,higher_education_research,mixed,false
+HOWIE-TRE-022,How have regional differences developed?,TREND_PATTERN,dev,en,higher_education_research,mixed,false
+HOWIE-TRE-023,Are mobility rates stable across the observation period?,TREND_PATTERN,dev,en,higher_education_research,mixed,false
+HOWIE-TRE-024,What pattern emerges when comparing multiple cohorts?,TREND_PATTERN,dev,en,higher_education_research,mixed,false
+HOWIE-TRE-025,How has the composition of the student body changed?,TREND_PATTERN,dev,en,higher_education_research,mixed,false
+HOWIE-TRE-026,What trajectory does the report show for research funding?,TREND_PATTERN,test,en,higher_education_research,mixed,false
+HOWIE-TRE-027,Do we see a shift in students' income sources?,TREND_PATTERN,test,en,higher_education_research,mixed,false
+HOWIE-TRE-028,How has the gender gap developed over time?,TREND_PATTERN,test,en,higher_education_research,mixed,false
+HOWIE-TRE-029,What pattern appears in the use of advisory services?,TREND_PATTERN,test,en,higher_education_research,mixed,false
+HOWIE-TRE-030,What are the main changes from the baseline year to the latest year?,TREND_PATTERN,test,en,higher_education_research,mixed,false
+HOWIE-EXP-001,Why did mobility rates decrease?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-002,How can the increase in student financial stress be explained?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-003,Why are first-generation students less likely to study abroad?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-004,What explains the difference between countries?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-005,Why did dropout risk rise in the latest cohort?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-006,How does the report explain changes in enrollment?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-007,Why might international students report higher housing problems?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-008,What factors contributed to the observed trend?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-009,Why are some fields of study associated with higher employment rates?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-010,How do the authors explain regional differences?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-011,Why does social background matter for higher education access?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-012,What reasons are given for lower participation in mobility programs?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-013,How can the gender difference in career expectations be understood?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-014,Why did the indicator change after the new survey wave?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-015,What mechanisms are suggested by the study?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-016,How does the study explain the link between income and study progress?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-017,Why are part-time students more affected by time constraints?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-018,What explains the gap between universities and applied sciences?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-019,Why might survey results differ from administrative records?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-020,How do the findings account for differences in student wellbeing?,EXPLANATION,train,en,higher_education_research,mixed,false
+HOWIE-EXP-021,Why did the authors choose this explanation?,EXPLANATION,dev,en,higher_education_research,mixed,false
+HOWIE-EXP-022,What does the evidence suggest caused the decline?,EXPLANATION,dev,en,higher_education_research,mixed,false
+HOWIE-EXP-023,Why are older students more likely to work during studies?,EXPLANATION,dev,en,higher_education_research,mixed,false
+HOWIE-EXP-024,How can the observed pattern in financial aid be interpreted causally or non-causally?,EXPLANATION,dev,en,higher_education_research,mixed,false
+HOWIE-EXP-025,Why does the study emphasize institutional context?,EXPLANATION,dev,en,higher_education_research,mixed,false
+HOWIE-EXP-026,What explains the change in study-abroad intentions?,EXPLANATION,test,en,higher_education_research,mixed,false
+HOWIE-EXP-027,Why do students from rural areas face different barriers?,EXPLANATION,test,en,higher_education_research,mixed,false
+HOWIE-EXP-028,How do economic conditions help explain the findings?,EXPLANATION,test,en,higher_education_research,mixed,false
+HOWIE-EXP-029,Why is the effect stronger for one subgroup?,EXPLANATION,test,en,higher_education_research,mixed,false
+HOWIE-EXP-030,What are the likely reasons behind the reported outcome?,EXPLANATION,test,en,higher_education_research,mixed,false
+HOWIE-SOU-001,Which study reported this finding?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-002,Where does this number come from?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-003,Can you cite the source for that statement?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-004,Which report contains the evidence on student mobility?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-005,What is the original publication behind this result?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-006,Which page supports this claim?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-007,Can you show the citation for the dropout rate?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-008,Which table reports the sample size?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-009,What source did you use for this answer?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-010,Which dataset is referenced for this statistic?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-011,Can you provide the bibliographic reference?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-012,Where is this result documented in the paper?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-013,Which DZHW publication mentions this limitation?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-014,What is the DOI of the cited study?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-015,Which source supports the comparison between countries?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-016,Can you point me to the exact report title?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-017,Which figure shows the trend you described?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-018,Where is the methodology described in the original source?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-019,Which evidence base supports this conclusion?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-020,Can you identify the source document for this claim?,SOURCE_SEEKING,train,en,higher_education_research,mixed,false
+HOWIE-SOU-021,What citation should I use for the student finance finding?,SOURCE_SEEKING,dev,en,higher_education_research,mixed,false
+HOWIE-SOU-022,Which publication contains this policy recommendation?,SOURCE_SEEKING,dev,en,higher_education_research,mixed,false
+HOWIE-SOU-023,Can you show the source for the interpretation?,SOURCE_SEEKING,dev,en,higher_education_research,mixed,false
+HOWIE-SOU-024,Where did the estimate of financial hardship come from?,SOURCE_SEEKING,dev,en,higher_education_research,mixed,false
+HOWIE-SOU-025,Which appendix contains the measurement details?,SOURCE_SEEKING,dev,en,higher_education_research,mixed,false
+HOWIE-SOU-026,What report should I cite for the mobility indicator?,SOURCE_SEEKING,test,en,higher_education_research,mixed,false
+HOWIE-SOU-027,Which chapter provides the evidence?,SOURCE_SEEKING,test,en,higher_education_research,mixed,false
+HOWIE-SOU-028,Can you list the sources used in this answer?,SOURCE_SEEKING,test,en,higher_education_research,mixed,false
+HOWIE-SOU-029,What is the source of the country-level comparison?,SOURCE_SEEKING,test,en,higher_education_research,mixed,false
+HOWIE-SOU-030,Which paper first reported this result?,SOURCE_SEEKING,test,en,higher_education_research,mixed,false
+HOWIE-NAV-001,Where can I find the section on student mobility?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-002,Show me where the report discusses financial aid.,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-003,Which part of the corpus covers doctoral careers?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-004,Where should I look for data on study dropout?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-005,Can you direct me to the chapter about methodology?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-006,Where in the system can I find policy briefs?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-007,Which document section explains the indicators?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-008,Where can I browse reports about student housing?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-009,Take me to the page with country comparisons.,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-010,Where is the dashboard for international students?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-011,Which area of the portal contains survey metadata?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-012,Where can I find related publications on social inequality?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-013,Show me the relevant section of the data portal.,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-014,Where should I search for tables on enrollment?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-015,Can you help me locate the appendix on sampling?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-016,Which folder contains the EUROSTUDENT reports?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-017,Where can I find the overview page for this project?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-018,Navigate to the report section about study conditions.,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-019,Where are the German-language intelligence briefs listed?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-020,Which part of the website has information on the student survey?,NAVIGATION,train,en,higher_education_research,mixed,false
+HOWIE-NAV-021,Where do I find the charts about living costs?,NAVIGATION,dev,en,higher_education_research,mixed,false
+HOWIE-NAV-022,Can you locate the subsection on first-generation students?,NAVIGATION,dev,en,higher_education_research,mixed,false
+HOWIE-NAV-023,Where is the glossary for these indicators?,NAVIGATION,dev,en,higher_education_research,mixed,false
+HOWIE-NAV-024,Which corpus category should I search for press releases?,NAVIGATION,dev,en,higher_education_research,mixed,false
+HOWIE-NAV-025,Where can I access the full PDF report?,NAVIGATION,dev,en,higher_education_research,mixed,false
+HOWIE-NAV-026,Point me to the place where methods reports are stored.,NAVIGATION,test,en,higher_education_research,mixed,false
+HOWIE-NAV-027,Where can I find all publications from this project?,NAVIGATION,test,en,higher_education_research,mixed,false
+HOWIE-NAV-028,Show me where this topic appears in the collection.,NAVIGATION,test,en,higher_education_research,mixed,false
+HOWIE-NAV-029,Which navigation path leads to the dataset documentation?,NAVIGATION,test,en,higher_education_research,mixed,false
+HOWIE-NAV-030,Where is the section that explains limitations?,NAVIGATION,test,en,higher_education_research,mixed,false
+HOWIE-INT-001,What do these findings imply for policy?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-002,How should I interpret the decrease in mobility rates?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-003,What does this result mean for university management?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-004,What is the significance of the difference between groups?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-005,How should policymakers read this evidence?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-006,What does the trend suggest about access to higher education?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-007,What are the implications of the findings for student support services?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-008,How important is this result in practical terms?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-009,What does the comparison imply about social inequality?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-010,How should I understand the reported association?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-011,What does this evidence suggest for future research?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-012,What is the broader meaning of the student finance findings?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-013,How should this result be communicated to non-experts?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-014,What conclusions can reasonably be drawn from the data?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-015,What does this finding tell us about institutional differences?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-016,How should the limitations affect our reading of the results?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-017,What is the policy relevance of the mobility trend?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-018,What does the evidence imply about fairness in higher education?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-019,How should I frame this result in a briefing?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-020,What does the study suggest about structural barriers?,INTERPRETATION,train,en,higher_education_research,mixed,false
+HOWIE-INT-021,What is the analytical meaning of the country comparison?,INTERPRETATION,dev,en,higher_education_research,mixed,false
+HOWIE-INT-022,How should the observed pattern be interpreted?,INTERPRETATION,dev,en,higher_education_research,mixed,false
+HOWIE-INT-023,What does this result imply for funding debates?,INTERPRETATION,dev,en,higher_education_research,mixed,false
+HOWIE-INT-024,What are the practical implications of the study?,INTERPRETATION,dev,en,higher_education_research,mixed,false
+HOWIE-INT-025,How should we understand the relationship between work and study progress?,INTERPRETATION,dev,en,higher_education_research,mixed,false
+HOWIE-INT-026,What message should stakeholders take from this result?,INTERPRETATION,test,en,higher_education_research,mixed,false
+HOWIE-INT-027,What does this mean for internationalization strategies?,INTERPRETATION,test,en,higher_education_research,mixed,false
+HOWIE-INT-028,How should I interpret the uncertainty around this estimate?,INTERPRETATION,test,en,higher_education_research,mixed,false
+HOWIE-INT-029,What does this result indicate about student vulnerability?,INTERPRETATION,test,en,higher_education_research,mixed,false
+HOWIE-INT-030,What is the most reasonable reading of the findings?,INTERPRETATION,test,en,higher_education_research,mixed,false
+HOWIE-DEC-001,Which intervention seems most effective to adopt?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-002,What should a university do based on these findings?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-003,Which policy option is better supported by the evidence?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-004,Should we prioritize housing support or financial aid?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-005,Which student group should receive targeted support first?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-006,What action would be most appropriate given the results?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-007,Which measure appears most promising for reducing dropout?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-008,Should policymakers expand mobility grants based on this evidence?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-009,What recommendation follows from the comparison?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-010,Which approach should be chosen for improving student wellbeing?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-011,How should a ministry respond to the reported trend?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-012,Which intervention has the strongest empirical support?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-013,What should be done to address financial stress among students?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-014,Which strategy is preferable for widening participation?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-015,Should universities invest more in advisory services?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-016,What practical step would you recommend from these findings?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-017,Which policy should be tested next?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-018,How should resources be allocated across student support programs?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-019,What is the best action for improving international student integration?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-020,Which option is more evidence-based?,DECISION_SUPPORT,train,en,higher_education_research,mixed,false
+HOWIE-DEC-021,Should the institution change its mobility support program?,DECISION_SUPPORT,dev,en,higher_education_research,mixed,false
+HOWIE-DEC-022,What should managers prioritize after reading this report?,DECISION_SUPPORT,dev,en,higher_education_research,mixed,false
+HOWIE-DEC-023,Which recommendation is most defensible from the data?,DECISION_SUPPORT,dev,en,higher_education_research,mixed,false
+HOWIE-DEC-024,How should the findings guide implementation decisions?,DECISION_SUPPORT,dev,en,higher_education_research,mixed,false
+HOWIE-DEC-025,What decision can be made from this evidence?,DECISION_SUPPORT,dev,en,higher_education_research,mixed,false
+HOWIE-DEC-026,Which intervention should be scaled first?,DECISION_SUPPORT,test,en,higher_education_research,mixed,false
+HOWIE-DEC-027,Should the project focus on outreach or financial support?,DECISION_SUPPORT,test,en,higher_education_research,mixed,false
+HOWIE-DEC-028,What is the most effective response to the observed problem?,DECISION_SUPPORT,test,en,higher_education_research,mixed,false
+HOWIE-DEC-029,Which policy implication should be acted on immediately?,DECISION_SUPPORT,test,en,higher_education_research,mixed,false
+HOWIE-DEC-030,What should be adopted if the goal is to reduce inequality?,DECISION_SUPPORT,test,en,higher_education_research,mixed,false
+HOWIE-FOL-001,What about in rural schools?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-002,And for international students?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-003,How about the latest wave?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-004,What about Germany specifically?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-005,Can you compare that with France?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-006,And what does the report say about women?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-007,Does that also apply to doctoral candidates?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-008,What about students with children?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-009,Can you show the same for 2021?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-010,How does that look by field of study?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-011,And what are the limitations there?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-012,What about the methodology for that?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-013,Can you explain that further?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-014,What does that mean for policy?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-015,Where can I find that section?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-016,Can you give me the source for that?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-017,How does it compare to the previous result?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-018,What about low-income students?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-019,Does the same pattern appear over time?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-020,And why did that happen?,FOLLOWUP,train,en,higher_education_research,mixed,true
+HOWIE-FOL-021,Can you summarize that again?,FOLLOWUP,dev,en,higher_education_research,mixed,true
+HOWIE-FOL-022,What about the sample size there?,FOLLOWUP,dev,en,higher_education_research,mixed,true
+HOWIE-FOL-023,Does this change for universities of applied sciences?,FOLLOWUP,dev,en,higher_education_research,mixed,true
+HOWIE-FOL-024,And in the qualitative study?,FOLLOWUP,dev,en,higher_education_research,mixed,true
+HOWIE-FOL-025,What about non-traditional students?,FOLLOWUP,dev,en,higher_education_research,mixed,true
+HOWIE-FOL-026,Can you put that into context?,FOLLOWUP,test,en,higher_education_research,mixed,true
+HOWIE-FOL-027,Does the finding hold for older students?,FOLLOWUP,test,en,higher_education_research,mixed,true
+HOWIE-FOL-028,What should we do about that?,FOLLOWUP,test,en,higher_education_research,mixed,true
+HOWIE-FOL-029,Can you show more detail?,FOLLOWUP,test,en,higher_education_research,mixed,true
+HOWIE-FOL-030,And where exactly is that reported?,FOLLOWUP,test,en,higher_education_research,mixed,true
+HOWIE-UNK-001,Hello there.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-002,Can you write me a poem about universities?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-003,What is the weather in Berlin today?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-004,Tell me a joke about students.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-005,Who won the football match yesterday?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-006,Book a train ticket to Hannover.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-007,Translate this sentence into Spanish.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-008,What is the capital of Canada?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-009,Generate a logo for my chatbot.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-010,Play some music.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-011,What is your favorite color?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-012,Can you order pizza for me?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-013,Explain quantum physics in one sentence.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-014,Set a reminder for tomorrow morning.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-015,What movies are showing tonight?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-016,Write a birthday message for my friend.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-017,How do I fix my washing machine?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-018,Tell me the stock price of Apple.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-019,Create a workout plan for beginners.,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-020,What is the recipe for pancakes?,UNKNOWN,train,en,higher_education_research,mixed,false
+HOWIE-UNK-021,Can you solve this unrelated math problem?,UNKNOWN,dev,en,higher_education_research,mixed,false
+HOWIE-UNK-022,Who is the president of France?,UNKNOWN,dev,en,higher_education_research,mixed,false
+HOWIE-UNK-023,Open my email inbox.,UNKNOWN,dev,en,higher_education_research,mixed,false
+HOWIE-UNK-024,Make a travel itinerary for Rome.,UNKNOWN,dev,en,higher_education_research,mixed,false
+HOWIE-UNK-025,What does this dream mean?,UNKNOWN,dev,en,higher_education_research,mixed,false
+HOWIE-UNK-026,Recommend a laptop for gaming.,UNKNOWN,test,en,higher_education_research,mixed,false
+HOWIE-UNK-027,Write Python code for a calculator app.,UNKNOWN,test,en,higher_education_research,mixed,false
+HOWIE-UNK-028,What is the best restaurant nearby?,UNKNOWN,test,en,higher_education_research,mixed,false
+HOWIE-UNK-029,Tell me a bedtime story.,UNKNOWN,test,en,higher_education_research,mixed,false
+HOWIE-UNK-030,How do I learn guitar quickly?,UNKNOWN,test,en,higher_education_research,mixed,false
