@@ -58,12 +58,43 @@ def _table_like_line(line: str) -> bool:
     return len(numeric_tokens) >= 4
 
 
+def _starts_with_numbered_heading(line: str) -> bool:
+    index = 0
+    length = len(line)
+    saw_digit_group = False
+
+    while index < length:
+        digit_start = index
+        while index < length and line[index].isdigit():
+            index += 1
+
+        if index == digit_start:
+            return False
+
+        saw_digit_group = True
+        if index >= length:
+            return False
+
+        if line[index].isspace():
+            return saw_digit_group
+
+        if line[index] != ".":
+            return False
+
+        index += 1
+        if index >= length:
+            return False
+
+        if line[index].isspace():
+            return saw_digit_group
+
+
 def _heading_like_line(line: str) -> bool:
     if len(line) > 100:
         return False
     if line.endswith(":"):
         return True
-    if re.match(r"^(\d+\.?)+\s+", line):
+    if _starts_with_numbered_heading(line):
         return True
     if line.startswith("#"):
         return True

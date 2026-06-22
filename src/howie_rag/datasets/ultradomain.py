@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, Iterator, List, Tuple
 
 from howie_rag.core.schemas import Document
 from howie_rag.core.utils import stable_id
@@ -104,8 +104,8 @@ def _iter_rows(path: str) -> Iterable[Tuple[Path, dict]]:
                 yield file_path, json.loads(stripped)
 
 
-def load_ultradomain_source_documents(path: str) -> List[SourceDocumentRecord]:
-    source_records_by_id: Dict[str, SourceDocumentRecord] = {}
+def iter_ultradomain_source_documents(path: str) -> Iterator[SourceDocumentRecord]:
+    seen_doc_ids = set()
 
     for file_path, row in _iter_rows(path):
         context_text = row.get("context")
@@ -117,10 +117,11 @@ def load_ultradomain_source_documents(path: str) -> List[SourceDocumentRecord]:
         title, authors = _title_and_authors(row.get("meta", {}))
         doc_id = stable_id(f"{DATASET_NAME}:{domain}:{context_id}")
 
-        if doc_id in source_records_by_id:
+        if doc_id in seen_doc_ids:
             continue
+        seen_doc_ids.add(doc_id)
 
-        source_records_by_id[doc_id] = SourceDocumentRecord(
+        yield SourceDocumentRecord(
             doc_id=doc_id,
             text=context_text,
             title=title,
@@ -131,14 +132,16 @@ def load_ultradomain_source_documents(path: str) -> List[SourceDocumentRecord]:
             metadata=_source_metadata(row, file_path, context_id, title, authors, domain),
         )
 
-    return list(source_records_by_id.values())
+ 
+
+def load_ultradomain_source_documents(path: str) -> List[SourceDocumentRecord]:
+    return list(iter_ultradomain_source_documents(path))
 
 
-def load_ultradomain_benchmark_records(path: str) -> List[BenchmarkQARecord]:
-    source_records = load_ultradomain_source_documents(path)
-    doc_id_by_context = {record.context_id: record.doc_id for record in source_records}
-
-    qa_records: List[BenchmarkQARecord] = []
+def iter_ultradomain_benchmark_records(path: str) -> Iterator[BenchmarkQARecord]:
+    doc_id_by_context = {
+        record.context_id: record.doc_id for record in iter_ultradomain_source_documents(path)
+    }
 
     for file_path, row in _iter_rows(path):
         question = _row_question(row)
@@ -153,20 +156,21 @@ def load_ultradomain_benchmark_records(path: str) -> List[BenchmarkQARecord]:
         row_identifier = row.get("_id") if row.get("_id") is not None else question
         question_id = stable_id(f"{DATASET_NAME}:{domain}:{context_id}:{row_identifier}")
 
-        qa_records.append(
-            BenchmarkQARecord(
-                question_id=question_id,
-                question=question,
-                gold_answers=answers,
-                gold_doc_id=gold_doc_id,
-                gold_context_id=context_id,
-                domain=domain,
-                dataset_name=DATASET_NAME,
-                metadata=_qa_metadata(row, file_path, context_id, domain),
-            )
+        yield BenchmarkQARecord(
+            question_id=question_id,
+            question=question,
+            gold_answers=answers,
+            gold_doc_id=gold_doc_id,
+            gold_context_id=context_id,
+            domain=domain,
+            dataset_name=DATASET_NAME,
+            metadata=_qa_metadata(row, file_path, context_id, domain),
         )
 
-    return qa_records
+
+
+def load_ultradomain_benchmark_records(path: str) -> List[BenchmarkQARecord]:
+    return list(iter_ultradomain_benchmark_records(path))
 
 
 def source_records_to_documents(source_records: List[SourceDocumentRecord]) -> List[Document]:

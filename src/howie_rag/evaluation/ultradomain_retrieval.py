@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+import time
+from typing import Dict, List
 
 from howie_rag.core.schemas import Chunk
 from howie_rag.datasets.schemas import BenchmarkQARecord
@@ -36,6 +37,14 @@ def _is_correct_match(benchmark: BenchmarkQARecord, chunk: Chunk) -> bool:
     return same_doc or same_context
 
 
+def _render_progress(current: int, total: int, width: int = 30) -> str:
+    if total <= 0:
+        return "[no work]"
+    completed = int(width * current / total)
+    bar = "#" * completed + "-" * (width - completed)
+    return f"[{bar}] {current}/{total}"
+
+
 def evaluate_ultradomain_retrieval(
     benchmark_records: List[BenchmarkQARecord],
     chunks: List[Chunk],
@@ -43,6 +52,7 @@ def evaluate_ultradomain_retrieval(
     variant: str = "naive",
     top_k: int = 5,
     candidate_pool_size: int = 30,
+    log_every: int = 25,
 ) -> Dict[str, object]:
     intent_classifier = RuleBasedIntentClassifier()
 
@@ -52,8 +62,20 @@ def evaluate_ultradomain_retrieval(
     mrr_at_5_total = 0.0
     precision_at_1_total = 0.0
     retrieved_chunks_total = 0.0
+    question_count = len(benchmark_records)
+    start_time = time.perf_counter()
 
-    for record in benchmark_records:
+    for index, record in enumerate(benchmark_records, start=1):
+        if index == 1 or index == question_count or index % log_every == 0:
+            elapsed = time.perf_counter() - start_time
+            print(
+                (
+                    f"eval  {_render_progress(index, question_count)} "
+                    f"variant={variant} retriever={retriever_name} elapsed={elapsed:.1f}s"
+                ),
+                flush=True,
+            )
+
         retrieval_output = retrieve_with_variant(
             query=record.question,
             chunks=chunks,
@@ -117,7 +139,7 @@ def evaluate_ultradomain_retrieval(
     return {
         "retriever_name": retriever_name,
         "variant": variant,
-        "question_count": len(benchmark_records),
+        "question_count": question_count,
         "hit_at_1": hit_at_1_total / total,
         "hit_at_5": hit_at_5_total / total,
         "mrr_at_5": mrr_at_5_total / total,

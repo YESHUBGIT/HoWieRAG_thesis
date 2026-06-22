@@ -5,10 +5,13 @@ __pycache__/
 lit_review/
 UltraDomain Dataset/
 source_data/
+intent_dataset/
 howie-data-ingestion/outputs/
 evaluation_results/
 ultradomain_processed/
 ultradomain_index/
+ultradomain_results/
+*.tar.gz
 .DS_Store
 .idea/
 .vscode/

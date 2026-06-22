@@ -1,12 +1,12 @@
 from pathlib import Path
-import json
+import shutil
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from howie_rag.datasets.ultradomain import (
-    load_ultradomain_benchmark_records,
-    load_ultradomain_source_documents,
+    iter_ultradomain_benchmark_records,
+    iter_ultradomain_source_documents,
 )
 
 
@@ -19,30 +19,31 @@ def main() -> int:
     output_dir = Path(sys.argv[2])
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    source_records = load_ultradomain_source_documents(input_path)
-    benchmark_records = load_ultradomain_benchmark_records(input_path)
-
     documents_path = output_dir / "documents.jsonl"
     questions_path = output_dir / "questions.jsonl"
     legacy_documents_path = output_dir / "source_documents.jsonl"
     legacy_questions_path = output_dir / "benchmark_questions.jsonl"
 
+    source_record_count = 0
     with documents_path.open("w", encoding="utf-8") as file_handle:
-        for record in source_records:
+        for record in iter_ultradomain_source_documents(input_path):
+            source_record_count += 1
             file_handle.write(record.model_dump_json() + "\n")
 
-    legacy_documents_path.write_text(documents_path.read_text(encoding="utf-8"), encoding="utf-8")
+    shutil.copyfile(documents_path, legacy_documents_path)
 
+    benchmark_record_count = 0
     with questions_path.open("w", encoding="utf-8") as file_handle:
-        for record in benchmark_records:
+        for record in iter_ultradomain_benchmark_records(input_path):
+            benchmark_record_count += 1
             file_handle.write(record.model_dump_json() + "\n")
 
-    legacy_questions_path.write_text(questions_path.read_text(encoding="utf-8"), encoding="utf-8")
+    shutil.copyfile(questions_path, legacy_questions_path)
 
     print(f"Source documents written: {documents_path}")
     print(f"Benchmark questions written: {questions_path}")
-    print(f"Source document count: {len(source_records)}")
-    print(f"Benchmark question count: {len(benchmark_records)}")
+    print(f"Source document count: {source_record_count}")
+    print(f"Benchmark question count: {benchmark_record_count}")
     return 0
 
 

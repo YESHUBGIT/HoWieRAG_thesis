@@ -1,6 +1,4 @@
 # howie-rag
-# gittok - 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
-# ip - 10.37.137.14 pass - yes1234!
 This project will be built step by step as a modular RAG pipeline.
 
 ## Step 1: Intent classification
