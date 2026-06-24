@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-export HOWIE_PLANNER_LLM_BASE_URL="${HOWIE_PLANNER_LLM_BASE_URL:-http://localhost:8001}"
-export HOWIE_PLANNER_LLM_MODEL="${HOWIE_PLANNER_LLM_MODEL:-Qwen/Qwen2.5-3B-Instruct}"
+SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
-printf 'HOWIE_PLANNER_LLM_BASE_URL=%s\n' "$HOWIE_PLANNER_LLM_BASE_URL"
-printf 'HOWIE_PLANNER_LLM_MODEL=%s\n' "$HOWIE_PLANNER_LLM_MODEL"
+source "$SCRIPT_DIR/eval/use_eval_env.sh"
