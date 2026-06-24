@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Any, Dict, Optional
 
 from howie_rag.llm.base import BaseLLMClient
@@ -37,8 +38,13 @@ ALLOWED_CHUNK_TYPES = {"narrative", "mixed", "table"}
 PLANNER_SYSTEM_PROMPT = """You are a retrieval planner for a RAG system.
 Return only valid JSON with no markdown fences.
 Choose the best retrieval intent and retrieval configuration for a user question.
-Prefer table and statistical evidence for finance, numeric, comparison, trend, and table-seeking questions.
-Prefer narrative evidence for summary, explanation, limitation, and method questions.
+Do not default to statistical_preferred.
+Use statistical_preferred only when the question clearly asks for numeric values, percentages, ratios, year-over-year changes, counts, totals, averages, or table lookups.
+Use source_metadata_preferred when the question asks where in a report, which page, which section, which source, or according to which report section.
+Use broad_hybrid for comparison questions when both table and narrative evidence may matter.
+Use narrative_preferred for summary, explanation, limitation, interpretation, and method questions.
+Use normal for simple factual questions that do not clearly need a table-focused or metadata-focused strategy.
+Keep query_for_retrieval the same as the original question unless a very small rewrite is absolutely necessary.
 Allowed intents: FACT, SUMMARY, COMPARISON, METHOD_CONTEXT, LIMITATION, TREND_PATTERN, EXPLANATION, SOURCE_SEEKING, NAVIGATION, INTERPRETATION, DECISION_SUPPORT, FOLLOWUP, UNKNOWN.
 Allowed retrieval_mode values: normal, narrative_preferred, statistical_preferred, source_metadata_preferred, broad_hybrid.
 Allowed preferred_document_types values: narrative, mixed, statistical.
@@ -52,6 +58,54 @@ Output JSON keys:
 - query_for_retrieval: string
 - explanation: string
 """
+
+
+NUMERIC_OR_TABLE_CUES = (
+    "percentage",
+    "percent",
+    "ratio",
+    "difference",
+    "change",
+    "increase",
+    "decrease",
+    "total",
+    "sum",
+    "average",
+    "how many",
+    "how much",
+    "value",
+    "amount",
+    "revenue",
+    "income",
+    "expense",
+    "margin",
+    "balance",
+    "debt",
+    "shares",
+)
+
+SOURCE_METADATA_CUES = (
+    "where",
+    "which page",
+    "which section",
+    "which source",
+    "according to",
+    "reported in",
+    "as disclosed in",
+    "in the report",
+)
+
+NARRATIVE_CUES = (
+    "summarize",
+    "summary",
+    "explain",
+    "why",
+    "how did",
+    "limitation",
+    "method",
+    "interpret",
+    "imply",
+)
 
 
 def _extract_json_object(text: str) -> Dict[str, Any]:
@@ -81,6 +135,89 @@ def _normalize_string_list(value: Any, allowed_values: set[str]) -> list[str]:
     return normalized
 
 
+def _has_numeric_or_table_cues(query: str) -> bool:
+    lowered = query.lower()
+    if any(cue in lowered for cue in NUMERIC_OR_TABLE_CUES):
+        return True
+    if re.search(r"\b(19|20)\d{2}\b", lowered):
+        return True
+    if re.search(r"\b\d+(?:[.,]\d+)?%?\b", lowered):
+        return True
+    return False
+
+
+def _has_source_metadata_cues(query: str) -> bool:
+    lowered = query.lower()
+    return any(cue in lowered for cue in SOURCE_METADATA_CUES)
+
+
+def _has_narrative_cues(query: str) -> bool:
+    lowered = query.lower()
+    return any(cue in lowered for cue in NARRATIVE_CUES)
+
+
+def _normalize_plan_with_guardrails(plan: RetrievalPlan) -> RetrievalPlan:
+    query = plan.original_query
+    has_numeric_cues = _has_numeric_or_table_cues(query)
+    has_source_cues = _has_source_metadata_cues(query)
+    has_narrative_cues = _has_narrative_cues(query)
+
+    plan.query_for_retrieval = query
+
+    if plan.detected_intent == "NAVIGATION":
+        plan.retrieval_mode = "source_metadata_preferred"
+    elif plan.detected_intent in {"SUMMARY", "EXPLANATION", "METHOD_CONTEXT", "LIMITATION", "INTERPRETATION"}:
+        plan.retrieval_mode = "narrative_preferred"
+    elif plan.detected_intent == "COMPARISON":
+        plan.retrieval_mode = "broad_hybrid"
+    elif plan.detected_intent in {"FACT", "TREND_PATTERN"} and has_numeric_cues:
+        if plan.retrieval_mode == "normal":
+            plan.retrieval_mode = "statistical_preferred"
+
+    if plan.retrieval_mode == "statistical_preferred" and not has_numeric_cues:
+        if has_source_cues:
+            plan.retrieval_mode = "source_metadata_preferred"
+        elif has_narrative_cues:
+            plan.retrieval_mode = "narrative_preferred"
+        else:
+            plan.retrieval_mode = "normal"
+
+    if has_source_cues and plan.retrieval_mode == "normal":
+        plan.retrieval_mode = "source_metadata_preferred"
+
+    if has_narrative_cues and plan.retrieval_mode == "normal":
+        plan.retrieval_mode = "narrative_preferred"
+
+    if plan.detected_intent in {"FACT", "COMPARISON", "TREND_PATTERN", "NAVIGATION"} and has_numeric_cues:
+        if "table" not in plan.preferred_chunk_types:
+            plan.preferred_chunk_types.append("table")
+
+    if plan.retrieval_mode == "source_metadata_preferred":
+        plan.metadata_preferences["prefer_source_metadata"] = True
+        if not plan.preferred_document_types:
+            plan.preferred_document_types = ["narrative", "mixed", "statistical"]
+
+    elif plan.retrieval_mode == "statistical_preferred":
+        plan.metadata_preferences["boost_tables_for_statistical"] = True
+        if not plan.preferred_document_types:
+            plan.preferred_document_types = ["statistical", "mixed"]
+        if has_numeric_cues and "table" not in plan.preferred_chunk_types:
+            plan.preferred_chunk_types.append("table")
+
+    elif plan.retrieval_mode == "narrative_preferred":
+        if not plan.preferred_document_types:
+            plan.preferred_document_types = ["narrative", "mixed"]
+        if not has_numeric_cues:
+            plan.preferred_chunk_types = [chunk_type for chunk_type in plan.preferred_chunk_types if chunk_type != "table"]
+
+    elif plan.retrieval_mode == "broad_hybrid":
+        if not plan.preferred_document_types:
+            plan.preferred_document_types = ["mixed", "statistical", "narrative"]
+
+    plan.explanation = f"{plan.explanation} | guardrails_applied"
+    return plan
+
+
 class LLMRetrievalPlanner:
     def __init__(self, llm_client: BaseLLMClient, temperature: float = 0.0, max_tokens: int = 300) -> None:
         self.llm_client = llm_client
@@ -91,6 +228,8 @@ class LLMRetrievalPlanner:
         user_prompt = (
             f"Question:\n{query}\n\n"
             "Choose the best retrieval plan for this question. "
+            "Do not overuse statistical_preferred. "
+            "Keep query_for_retrieval equal to the original question unless a tiny rewrite is absolutely necessary. "
             "If the question likely needs values from a table, set preferred_chunk_types to include 'table'."
         )
 
@@ -102,7 +241,8 @@ class LLMRetrievalPlanner:
                 max_tokens=self.max_tokens,
             )
             payload = _extract_json_object(response_text)
-            return self._plan_from_payload(payload, query=query, top_k=top_k, candidate_pool_size=candidate_pool_size)
+            plan = self._plan_from_payload(payload, query=query, top_k=top_k, candidate_pool_size=candidate_pool_size)
+            return _normalize_plan_with_guardrails(plan)
         except Exception as error:
             fallback = build_retrieval_plan(
                 query=query,

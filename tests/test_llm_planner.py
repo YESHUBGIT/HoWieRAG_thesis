@@ -35,7 +35,7 @@ def test_llm_planner_parses_json_plan() -> None:
     assert plan.detected_intent == "FACT"
     assert plan.retrieval_mode == "statistical_preferred"
     assert plan.preferred_chunk_types == ["table"]
-    assert plan.query_for_retrieval == "2019 revenue table"
+    assert plan.query_for_retrieval == "What was the 2019 revenue?"
 
 
 def test_llm_planner_falls_back_when_output_is_invalid() -> None:
@@ -87,3 +87,32 @@ def test_llm_document_aware_variant_uses_llm_plan_for_table_preference() -> None
     assert output["detected_intent"] == "FACT"
     assert output["retrieval_plan"].preferred_chunk_types == ["table"]
     assert output["matches"][0].chunk.chunk_id == "2"
+
+
+def test_llm_planner_guardrails_prevent_unjustified_statistical_mode() -> None:
+    planner = LLMRetrievalPlanner(
+        FakeLLMClient(
+            '{"detected_intent":"SUMMARY","retrieval_mode":"statistical_preferred","preferred_document_types":["statistical"],"preferred_chunk_types":["table"],"metadata_preferences":{},"query_for_retrieval":"summary of the report","explanation":"bad initial choice"}'
+        )
+    )
+
+    plan = planner.build_plan("Summarize the main findings of the report.", top_k=5, candidate_pool_size=30)
+
+    assert plan.detected_intent == "SUMMARY"
+    assert plan.retrieval_mode == "narrative_preferred"
+    assert "table" not in plan.preferred_chunk_types
+    assert plan.query_for_retrieval == "Summarize the main findings of the report."
+
+
+def test_llm_planner_guardrails_force_navigation_to_source_metadata() -> None:
+    planner = LLMRetrievalPlanner(
+        FakeLLMClient(
+            '{"detected_intent":"NAVIGATION","retrieval_mode":"statistical_preferred","preferred_document_types":["mixed"],"preferred_chunk_types":["table"],"metadata_preferences":{},"query_for_retrieval":"which page has this","explanation":"bad initial choice"}'
+        )
+    )
+
+    plan = planner.build_plan("Which page in the report contains the debt maturities table?", top_k=5, candidate_pool_size=30)
+
+    assert plan.detected_intent == "NAVIGATION"
+    assert plan.retrieval_mode == "source_metadata_preferred"
+    assert plan.metadata_preferences["prefer_source_metadata"] is True
