@@ -5,6 +5,56 @@ from howie_rag.retrieval.base import BaseRetriever, RetrievalMatch
 from howie_rag.retrieval_planning.retrieval_plan_schema import RetrievalPlan
 
 
+def _allowed_chunk_types(plan: RetrievalPlan) -> set[str]:
+    if plan.detected_intent in {"SUMMARY", "EXPLANATION", "METHOD_CONTEXT", "LIMITATION", "INTERPRETATION"}:
+        return {"narrative", "mixed"}
+
+    if plan.detected_intent == "TREND_PATTERN":
+        return {"table", "mixed"}
+
+    if plan.preferred_chunk_types and plan.detected_intent in {"FOLLOWUP"}:
+        allowed = set(plan.preferred_chunk_types)
+        if "table" in allowed:
+            allowed.add("mixed")
+        if "narrative" in allowed:
+            allowed.add("mixed")
+        return allowed
+
+    if plan.retrieval_mode == "statistical_preferred":
+        return {"table", "mixed"} if plan.detected_intent == "TREND_PATTERN" else set()
+    if plan.retrieval_mode == "narrative_preferred":
+        return {"narrative", "mixed"}
+    return set()
+
+
+def _chunk_matches_plan(chunk: Chunk, plan: RetrievalPlan) -> bool:
+    metadata = chunk.metadata
+    chunk_type = metadata.get("chunk_type")
+    document_type = metadata.get("document_type")
+    allowed_chunk_types = _allowed_chunk_types(plan)
+
+    if allowed_chunk_types and chunk_type not in allowed_chunk_types:
+        return False
+
+    if plan.preferred_document_types and document_type is not None:
+        if document_type not in plan.preferred_document_types and document_type != "mixed":
+            return False
+
+    if plan.retrieval_mode == "source_metadata_preferred":
+        source_marker = metadata.get("original_source_file") or metadata.get("source_path") or metadata.get("file_name")
+        if not source_marker and chunk_type == "table":
+            return False
+
+    return True
+
+
+def _filter_chunks_for_plan(chunks: List[Chunk], plan: RetrievalPlan) -> List[Chunk]:
+    filtered_chunks = [chunk for chunk in chunks if _chunk_matches_plan(chunk, plan)]
+    if len(filtered_chunks) >= plan.top_k:
+        return filtered_chunks
+    return chunks
+
+
 def _boost_for_document_type(document_type: Optional[str], plan: RetrievalPlan) -> float:
     if not document_type:
         return 0.0
@@ -132,7 +182,8 @@ def retrieve_with_metadata_boost(
     chunks: List[Chunk],
     plan: RetrievalPlan,
 ) -> List[RetrievalMatch]:
-    candidate_matches = retriever.retrieve(query, chunks, top_k=plan.candidate_pool_size)
+    filtered_chunks = _filter_chunks_for_plan(chunks, plan)
+    candidate_matches = retriever.retrieve(query, filtered_chunks, top_k=plan.candidate_pool_size)
     if not candidate_matches:
         return []
 
