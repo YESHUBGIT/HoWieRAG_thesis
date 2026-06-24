@@ -37,7 +37,12 @@ def test_metadata_reranking_boosts_preferred_document_type() -> None:
     plan = build_retrieval_plan("What trend is visible?", "TREND_PATTERN")
     matches = [
         RetrievalMatch(
-            chunk=Chunk(chunk_id="1", doc_id="doc-1", text="a", metadata={"document_type": "narrative"}),
+            chunk=Chunk(
+                chunk_id="1",
+                doc_id="doc-1",
+                text="a",
+                metadata={"document_type": "narrative", "chunk_type": "narrative", "table_line_ratio": 0.0},
+            ),
             score=1.0,
         ),
         RetrievalMatch(
@@ -45,7 +50,13 @@ def test_metadata_reranking_boosts_preferred_document_type() -> None:
                 chunk_id="2",
                 doc_id="doc-2",
                 text="b",
-                metadata={"document_type": "statistical", "has_tables": True},
+                metadata={
+                    "document_type": "statistical",
+                    "has_tables": True,
+                    "chunk_type": "table",
+                    "has_table_like_content": True,
+                    "table_line_ratio": 1.0,
+                },
             ),
             score=1.0,
         ),
@@ -61,6 +72,41 @@ def test_metadata_reranking_handles_missing_metadata() -> None:
     reranked = rerank_matches_with_metadata(matches, plan)
     assert reranked[0].chunk.chunk_id == "1"
     assert reranked[0].adjusted_score == 1.0
+
+
+def test_metadata_reranking_prefers_table_chunk_for_fact_queries() -> None:
+    plan = build_retrieval_plan("What was the 2019 revenue?", "FACT")
+    matches = [
+        RetrievalMatch(
+            chunk=Chunk(
+                chunk_id="1",
+                doc_id="doc-1",
+                text="Revenue discussion",
+                metadata={"document_type": "mixed", "chunk_type": "narrative", "table_line_ratio": 0.0},
+            ),
+            score=10.0,
+        ),
+        RetrievalMatch(
+            chunk=Chunk(
+                chunk_id="2",
+                doc_id="doc-1",
+                text="| 2019 | 100 |",
+                metadata={
+                    "document_type": "mixed",
+                    "has_tables": True,
+                    "chunk_type": "table",
+                    "has_table_like_content": True,
+                    "table_line_ratio": 1.0,
+                },
+            ),
+            score=9.0,
+        ),
+    ]
+
+    reranked = rerank_matches_with_metadata(matches, plan)
+
+    assert reranked[0].chunk.chunk_id == "2"
+    assert reranked[0].adjusted_score > reranked[1].adjusted_score
 
 
 def test_document_aware_variant_uses_metadata_preference() -> None:

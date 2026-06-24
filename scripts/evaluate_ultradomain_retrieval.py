@@ -9,6 +9,7 @@ from howie_rag.evaluation.ultradomain_retrieval import (
     load_benchmark_records,
     load_chunk_records,
     save_retrieval_results,
+    select_benchmark_records,
 )
 
 
@@ -19,6 +20,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("retriever", choices=["keyword", "bm25"], help="Retriever to evaluate")
     parser.add_argument("output_dir", help="Output directory for evaluation results")
     parser.add_argument("--log-every", type=int, default=25)
+    parser.add_argument("--max-questions", type=int)
+    parser.add_argument("--sample-size", type=int)
+    parser.add_argument("--sample-seed", type=int, default=42)
+    parser.add_argument("--save-every", type=int)
     return parser
 
 
@@ -30,18 +35,35 @@ def main() -> int:
     retriever_name = args.retriever
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    json_path = output_dir / f"retrieval_results_{retriever_name}.json"
+    csv_path = output_dir / f"retrieval_results_{retriever_name}.csv"
+    partial_json_path = output_dir / f"retrieval_results_{retriever_name}.partial.json"
+    partial_csv_path = output_dir / f"retrieval_results_{retriever_name}.partial.csv"
 
-    benchmark_records = load_benchmark_records(benchmark_path)
+    benchmark_records = select_benchmark_records(
+        load_benchmark_records(benchmark_path),
+        max_questions=args.max_questions,
+        sample_size=args.sample_size,
+        sample_seed=args.sample_seed,
+    )
     chunks = load_chunk_records(chunks_path)
+
+    def save_partial(results: dict) -> None:
+        save_retrieval_results(results, str(partial_json_path), str(partial_csv_path))
+        print(
+            f"checkpoint saved: {results['question_count']} questions -> {partial_json_path}",
+            flush=True,
+        )
+
     results = evaluate_ultradomain_retrieval(
         benchmark_records,
         chunks,
         retriever_name=retriever_name,
         log_every=args.log_every,
+        save_every=args.save_every,
+        checkpoint_callback=save_partial if args.save_every else None,
     )
 
-    json_path = output_dir / f"retrieval_results_{retriever_name}.json"
-    csv_path = output_dir / f"retrieval_results_{retriever_name}.csv"
     save_retrieval_results(results, str(json_path), str(csv_path))
 
     print(f"Retriever: {retriever_name}", flush=True)

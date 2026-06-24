@@ -107,3 +107,7 @@ def test_evaluate_ultradomain_retrieval_computes_metrics() -> None:
     assert results["hit_at_5"] == 1.0
     assert results["mrr_at_5"] == 1.0
     assert results["precision_at_1"] == 1.0
+    assert results["per_question"][0]["retrieved"][0]["title"] == "Mobility report"
+    assert results["per_question"][0]["retrieved"][0]["document_type"] in {"narrative", "mixed", "statistical"}
+    assert "chunk_type" in results["per_question"][0]["retrieved"][0]
+    assert "is_correct" in results["per_question"][0]["retrieved"][0]

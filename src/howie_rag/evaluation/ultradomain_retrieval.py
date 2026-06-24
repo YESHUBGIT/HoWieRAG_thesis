@@ -1,11 +1,14 @@
 import json
 from pathlib import Path
+import random
 import time
-from typing import Dict, List
+from typing import Callable, Dict, List, Optional
 
 from howie_rag.core.schemas import Chunk
 from howie_rag.datasets.schemas import BenchmarkQARecord
 from howie_rag.intent.rule_based import RuleBasedIntentClassifier
+from howie_rag.retrieval.factory import create_retriever
+from howie_rag.retrieval_planning.llm_planner import LLMRetrievalPlanner
 from howie_rag.retrieval_planning.experiment_variants import retrieve_with_variant
 
 
@@ -45,6 +48,55 @@ def _render_progress(current: int, total: int, width: int = 30) -> str:
     return f"[{bar}] {current}/{total}"
 
 
+def select_benchmark_records(
+    benchmark_records: List[BenchmarkQARecord],
+    max_questions: Optional[int] = None,
+    sample_size: Optional[int] = None,
+    sample_seed: int = 42,
+) -> List[BenchmarkQARecord]:
+    if max_questions is not None and max_questions <= 0:
+        raise ValueError("max_questions must be greater than 0")
+    if sample_size is not None and sample_size <= 0:
+        raise ValueError("sample_size must be greater than 0")
+    if max_questions is not None and sample_size is not None:
+        raise ValueError("max_questions and sample_size cannot be used together")
+
+    selected_records = benchmark_records
+    if max_questions is not None:
+        selected_records = benchmark_records[:max_questions]
+    elif sample_size is not None and sample_size < len(benchmark_records):
+        rng = random.Random(sample_seed)
+        sampled_indices = sorted(rng.sample(range(len(benchmark_records)), sample_size))
+        selected_records = [benchmark_records[index] for index in sampled_indices]
+
+    return selected_records
+
+
+def _build_results_snapshot(
+    retriever_name: str,
+    variant: str,
+    question_count: int,
+    hit_at_1_total: float,
+    hit_at_5_total: float,
+    mrr_at_5_total: float,
+    precision_at_1_total: float,
+    retrieved_chunks_total: float,
+    per_question_results: List[Dict[str, object]],
+) -> Dict[str, object]:
+    total = question_count or 1
+    return {
+        "retriever_name": retriever_name,
+        "variant": variant,
+        "question_count": question_count,
+        "hit_at_1": hit_at_1_total / total,
+        "hit_at_5": hit_at_5_total / total,
+        "mrr_at_5": mrr_at_5_total / total,
+        "precision_at_1": precision_at_1_total / total,
+        "average_retrieved_chunks_per_question": retrieved_chunks_total / total,
+        "per_question": per_question_results,
+    }
+
+
 def evaluate_ultradomain_retrieval(
     benchmark_records: List[BenchmarkQARecord],
     chunks: List[Chunk],
@@ -53,8 +105,15 @@ def evaluate_ultradomain_retrieval(
     top_k: int = 5,
     candidate_pool_size: int = 30,
     log_every: int = 25,
+    save_every: Optional[int] = None,
+    checkpoint_callback: Optional[Callable[[Dict[str, object]], None]] = None,
+    llm_planner: Optional[LLMRetrievalPlanner] = None,
 ) -> Dict[str, object]:
     intent_classifier = RuleBasedIntentClassifier()
+    retriever = create_retriever(retriever_name)
+
+    if save_every is not None and save_every <= 0:
+        raise ValueError("save_every must be greater than 0")
 
     per_question_results = []
     hit_at_1_total = 0.0
@@ -81,7 +140,9 @@ def evaluate_ultradomain_retrieval(
             chunks=chunks,
             retriever_name=retriever_name,
             variant=variant,
+            retriever=retriever,
             intent_classifier=intent_classifier,
+            llm_planner=llm_planner,
             top_k=top_k,
             candidate_pool_size=candidate_pool_size,
         )
@@ -126,7 +187,17 @@ def evaluate_ultradomain_retrieval(
                     {
                         "chunk_id": match.chunk.chunk_id,
                         "doc_id": match.chunk.doc_id,
+                        "title": match.chunk.metadata.get("title"),
                         "context_id": match.chunk.metadata.get("context_id"),
+                        "document_type": match.chunk.metadata.get("document_type"),
+                        "chunk_type": match.chunk.metadata.get("chunk_type"),
+                        "has_tables": match.chunk.metadata.get("has_tables"),
+                        "has_table_like_content": match.chunk.metadata.get("has_table_like_content"),
+                        "table_line_ratio": match.chunk.metadata.get("table_line_ratio"),
+                        "source_file": match.chunk.metadata.get("original_source_file")
+                        or match.chunk.metadata.get("source_file")
+                        or match.chunk.metadata.get("file_name"),
+                        "is_correct": _is_correct_match(record, match.chunk),
                         "original_score": match.original_score if match.original_score is not None else match.score,
                         "adjusted_score": match.adjusted_score if match.adjusted_score is not None else match.score,
                     }
@@ -135,18 +206,32 @@ def evaluate_ultradomain_retrieval(
             }
         )
 
-    total = len(benchmark_records) or 1
-    return {
-        "retriever_name": retriever_name,
-        "variant": variant,
-        "question_count": question_count,
-        "hit_at_1": hit_at_1_total / total,
-        "hit_at_5": hit_at_5_total / total,
-        "mrr_at_5": mrr_at_5_total / total,
-        "precision_at_1": precision_at_1_total / total,
-        "average_retrieved_chunks_per_question": retrieved_chunks_total / total,
-        "per_question": per_question_results,
-    }
+        if checkpoint_callback is not None and save_every is not None and index % save_every == 0:
+            checkpoint_callback(
+                _build_results_snapshot(
+                    retriever_name=retriever_name,
+                    variant=variant,
+                    question_count=index,
+                    hit_at_1_total=hit_at_1_total,
+                    hit_at_5_total=hit_at_5_total,
+                    mrr_at_5_total=mrr_at_5_total,
+                    precision_at_1_total=precision_at_1_total,
+                    retrieved_chunks_total=retrieved_chunks_total,
+                    per_question_results=per_question_results,
+                )
+            )
+
+    return _build_results_snapshot(
+        retriever_name=retriever_name,
+        variant=variant,
+        question_count=question_count,
+        hit_at_1_total=hit_at_1_total,
+        hit_at_5_total=hit_at_5_total,
+        mrr_at_5_total=mrr_at_5_total,
+        precision_at_1_total=precision_at_1_total,
+        retrieved_chunks_total=retrieved_chunks_total,
+        per_question_results=per_question_results,
+    )
 
 
 def save_retrieval_results(results: Dict[str, object], json_path: str, csv_path: str) -> None:

@@ -37,6 +37,29 @@ def test_chunk_documents_combines_multiple_documents() -> None:
     assert [chunk.doc_id for chunk in chunks] == ["doc-1", "doc-1", "doc-2", "doc-2"]
 
 
+def test_chunk_document_marks_table_chunks_and_preserves_headers() -> None:
+    document = Document(
+        doc_id="doc-1",
+        title="finance",
+        text=(
+            "Revenue discussion before table.\n\n"
+            "| year | revenue | cost |\n"
+            "| 2022 | 10 | 4 |\n"
+            "| 2023 | 12 | 5 |\n"
+            "| 2024 | 14 | 6 |\n"
+        ),
+        metadata={"has_tables": True},
+    )
+
+    chunks = chunk_document(document, chunk_size=45, overlap=5)
+
+    table_chunks = [chunk for chunk in chunks if chunk.metadata["chunk_type"] == "table"]
+    assert table_chunks
+    assert all(chunk.metadata["has_table_like_content"] is True for chunk in table_chunks)
+    assert all("| year | revenue | cost |" in chunk.text for chunk in table_chunks)
+    assert all(chunk.metadata["table_line_ratio"] > 0 for chunk in table_chunks)
+
+
 def test_chunk_document_validates_arguments() -> None:
     document = Document(doc_id="doc-1", title="study", text="abcdef", metadata={})
 
