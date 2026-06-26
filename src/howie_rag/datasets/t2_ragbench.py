@@ -1,10 +1,11 @@
 import ast
 import json
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Tuple
+from typing import Dict, Iterable, Iterator, List, Optional, Tuple
 
 from howie_rag.core.schemas import Document
 from howie_rag.core.utils import stable_id
+from howie_rag.datasets.normalization import normalize_source_metadata
 from howie_rag.datasets.schemas import BenchmarkQARecord, SourceDocumentRecord
 from howie_rag.document_classification import classify_document_content
 
@@ -44,6 +45,21 @@ def _iter_dataset_files(path: str) -> Iterable[Tuple[str, str, Path]]:
             yield file_path.parent.parent.name, file_path.parent.name, file_path
         elif file_path.name == "turn_0.jsonl":
             yield file_path.parent.name, "turn_0", file_path
+
+
+def _normalized_filter_set(values: Optional[List[str]]) -> Optional[set[str]]:
+    if not values:
+        return None
+    normalized = {value.strip() for value in values if isinstance(value, str) and value.strip()}
+    return normalized or None
+
+
+def _matches_filters(subset: str, split: str, subsets: Optional[set[str]], splits: Optional[set[str]]) -> bool:
+    if subsets is not None and subset not in subsets:
+        return False
+    if splits is not None and split not in splits:
+        return False
+    return True
 
 
 def _normalize_answers(*values: object) -> List[str]:
@@ -104,6 +120,18 @@ def _source_metadata(row: dict, subset: str, split: str, context_id: str) -> dic
         "subset": subset,
         "split": split,
         "context_id": context_id,
+        **normalize_source_metadata(
+            dataset_name=DATASET_NAME,
+            domain=subset,
+            context_id=context_id,
+            title=_source_title(row, context_id),
+            source_file=str(row.get("file_name") or ""),
+            subset=subset,
+            split=split,
+            source_year=str(row.get("report_year") or ""),
+            source_entity=str(row.get("company_name") or ""),
+            source_page_number=str(row.get("page_number") or ""),
+        ),
     }
     for field_name in _OPTIONAL_METADATA_FIELDS:
         if field_name in row and row[field_name] is not None:
@@ -118,6 +146,18 @@ def _qa_metadata(row: dict, subset: str, split: str, context_id: str) -> dict:
         "subset": subset,
         "split": split,
         "context_id": context_id,
+        **normalize_source_metadata(
+            dataset_name=DATASET_NAME,
+            domain=subset,
+            context_id=context_id,
+            title=_source_title(row, context_id),
+            source_file=str(row.get("file_name") or ""),
+            subset=subset,
+            split=split,
+            source_year=str(row.get("report_year") or ""),
+            source_entity=str(row.get("company_name") or ""),
+            source_page_number=str(row.get("page_number") or ""),
+        ),
     }
     for field_name in _OPTIONAL_METADATA_FIELDS:
         if field_name in row and row[field_name] is not None:
@@ -125,8 +165,16 @@ def _qa_metadata(row: dict, subset: str, split: str, context_id: str) -> dict:
     return metadata
 
 
-def _iter_rows(path: str) -> Iterator[Tuple[str, str, Path, dict]]:
+def _iter_rows(
+    path: str,
+    subsets: Optional[List[str]] = None,
+    splits: Optional[List[str]] = None,
+) -> Iterator[Tuple[str, str, Path, dict]]:
+    normalized_subsets = _normalized_filter_set(subsets)
+    normalized_splits = _normalized_filter_set(splits)
     for subset, split, file_path in _iter_dataset_files(path):
+        if not _matches_filters(subset, split, normalized_subsets, normalized_splits):
+            continue
         with file_path.open(encoding="utf-8") as file_handle:
             for line in file_handle:
                 stripped = line.strip()
@@ -135,10 +183,14 @@ def _iter_rows(path: str) -> Iterator[Tuple[str, str, Path, dict]]:
                 yield subset, split, file_path, json.loads(stripped)
 
 
-def iter_t2_ragbench_source_documents(path: str) -> Iterator[SourceDocumentRecord]:
+def iter_t2_ragbench_source_documents(
+    path: str,
+    subsets: Optional[List[str]] = None,
+    splits: Optional[List[str]] = None,
+) -> Iterator[SourceDocumentRecord]:
     seen_doc_ids = set()
 
-    for subset, split, _file_path, row in _iter_rows(path):
+    for subset, split, _file_path, row in _iter_rows(path, subsets=subsets, splits=splits):
         context_text = row.get("context")
         context_id = row.get("context_id")
         if not isinstance(context_text, str) or not context_text.strip():
@@ -163,16 +215,25 @@ def iter_t2_ragbench_source_documents(path: str) -> Iterator[SourceDocumentRecor
         )
 
 
-def load_t2_ragbench_source_documents(path: str) -> List[SourceDocumentRecord]:
-    return list(iter_t2_ragbench_source_documents(path))
+def load_t2_ragbench_source_documents(
+    path: str,
+    subsets: Optional[List[str]] = None,
+    splits: Optional[List[str]] = None,
+) -> List[SourceDocumentRecord]:
+    return list(iter_t2_ragbench_source_documents(path, subsets=subsets, splits=splits))
 
 
-def iter_t2_ragbench_benchmark_records(path: str) -> Iterator[BenchmarkQARecord]:
+def iter_t2_ragbench_benchmark_records(
+    path: str,
+    subsets: Optional[List[str]] = None,
+    splits: Optional[List[str]] = None,
+) -> Iterator[BenchmarkQARecord]:
     doc_id_by_context: Dict[Tuple[str, str], str] = {
-        (record.domain, record.context_id): record.doc_id for record in iter_t2_ragbench_source_documents(path)
+        (record.domain, record.context_id): record.doc_id
+        for record in iter_t2_ragbench_source_documents(path, subsets=subsets, splits=splits)
     }
 
-    for subset, split, _file_path, row in _iter_rows(path):
+    for subset, split, _file_path, row in _iter_rows(path, subsets=subsets, splits=splits):
         question = row.get("question")
         context_id = row.get("context_id")
         question_id = row.get("id")
@@ -202,8 +263,12 @@ def iter_t2_ragbench_benchmark_records(path: str) -> Iterator[BenchmarkQARecord]
         )
 
 
-def load_t2_ragbench_benchmark_records(path: str) -> List[BenchmarkQARecord]:
-    return list(iter_t2_ragbench_benchmark_records(path))
+def load_t2_ragbench_benchmark_records(
+    path: str,
+    subsets: Optional[List[str]] = None,
+    splits: Optional[List[str]] = None,
+) -> List[BenchmarkQARecord]:
+    return list(iter_t2_ragbench_benchmark_records(path, subsets=subsets, splits=splits))
 
 
 def source_records_to_documents(source_records: List[SourceDocumentRecord]) -> List[Document]:
@@ -231,5 +296,9 @@ def source_records_to_documents(source_records: List[SourceDocumentRecord]) -> L
     return documents
 
 
-def load_t2_ragbench_documents(path: str) -> List[Document]:
-    return source_records_to_documents(load_t2_ragbench_source_documents(path))
+def load_t2_ragbench_documents(
+    path: str,
+    subsets: Optional[List[str]] = None,
+    splits: Optional[List[str]] = None,
+) -> List[Document]:
+    return source_records_to_documents(load_t2_ragbench_source_documents(path, subsets=subsets, splits=splits))

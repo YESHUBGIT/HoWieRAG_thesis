@@ -60,6 +60,64 @@ def test_chunk_document_marks_table_chunks_and_preserves_headers() -> None:
     assert all(chunk.metadata["table_line_ratio"] > 0 for chunk in table_chunks)
 
 
+def test_chunk_document_uses_t2_structured_sections_when_available() -> None:
+    document = Document(
+        doc_id="doc-1",
+        title="page_10",
+        text="flattened context text that should not drive the chunk structure",
+        metadata={
+            "source_type": "t2_ragbench_context",
+            "table": "| year | revenue |\n| 2019 | 100 |\n| 2020 | 120 |",
+            "pre_text": "Revenue increased over time.",
+            "post_text": "Management discussed margin pressure.",
+            "has_explicit_table": True,
+        },
+    )
+
+    chunks = chunk_document(document, chunk_size=40, overlap=5)
+
+    assert chunks
+    source_sections = {chunk.metadata.get("source_section") for chunk in chunks}
+    assert source_sections == {"pre_text", "table", "post_text"}
+
+    table_chunks = [chunk for chunk in chunks if chunk.metadata.get("source_section") == "table"]
+    assert table_chunks
+    assert all(chunk.metadata.get("table") == chunk.text for chunk in table_chunks)
+    assert all(chunk.metadata.get("pre_text") == "" for chunk in table_chunks)
+    assert all(chunk.metadata.get("post_text") == "" for chunk in table_chunks)
+
+    narrative_chunks = [chunk for chunk in chunks if chunk.metadata.get("source_section") in {"pre_text", "post_text"}]
+    assert narrative_chunks
+    assert all(chunk.metadata.get("table") == "" for chunk in narrative_chunks)
+
+
+def test_chunk_document_can_force_flat_t2_mode() -> None:
+    document = Document(
+        doc_id="doc-1",
+        title="page_10",
+        text="Revenue increased over time.\n| year | revenue |\n| 2019 | 100 |\nManagement discussed margin pressure.",
+        metadata={
+            "source_type": "t2_ragbench_context",
+            "table": "| year | revenue |\n| 2019 | 100 |",
+            "pre_text": "Revenue increased over time.",
+            "post_text": "Management discussed margin pressure.",
+            "has_explicit_table": True,
+        },
+    )
+
+    chunks = chunk_document(document, chunk_size=40, overlap=5, t2_chunking_mode="flat")
+
+    assert chunks
+    assert all(chunk.metadata.get("source_section") is None for chunk in chunks)
+
+
+def test_chunk_document_rejects_invalid_t2_chunking_mode() -> None:
+    document = Document(doc_id="doc-1", title="study", text="abcdef", metadata={})
+
+    with pytest.raises(ValueError):
+        chunk_document(document, chunk_size=4, overlap=1, t2_chunking_mode="bad-mode")
+
+
 def test_chunk_document_validates_arguments() -> None:
     document = Document(doc_id="doc-1", title="study", text="abcdef", metadata={})
 

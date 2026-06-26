@@ -1,5 +1,6 @@
 from howie_rag.retrieval.base import BaseRetriever
 from howie_rag.retrieval.bm25_retriever import BM25Retriever
+from howie_rag.retrieval.field_bm25_retriever import FieldBM25Retriever
 from howie_rag.retrieval.keyword_retriever import KeywordRetriever
 
 
@@ -9,4 +10,6 @@ def create_retriever(name: str) -> BaseRetriever:
         return KeywordRetriever()
     if normalized_name == "bm25":
         return BM25Retriever()
+    if normalized_name == "field_bm25":
+        return FieldBM25Retriever()
     raise ValueError(f"Unsupported retriever: {name}")

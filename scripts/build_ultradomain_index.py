@@ -41,6 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--chunk-size", type=int, default=1200, help="Chunk size in characters")
     parser.add_argument("--overlap", type=int, default=150, help="Chunk overlap in characters")
     parser.add_argument(
+        "--t2-chunking-mode",
+        choices=["structured", "flat"],
+        default="structured",
+        help="How to chunk T2-RAGBench documents when table/pre/post fields are present",
+    )
+    parser.add_argument(
         "--log-every",
         type=int,
         default=25,
@@ -71,7 +77,7 @@ def main() -> int:
     print(
         (
             "Converting source records into classified Document objects and chunking... "
-            f"chunk_size={args.chunk_size}, overlap={args.overlap}, log_every={args.log_every}"
+            f"chunk_size={args.chunk_size}, overlap={args.overlap}, t2_chunking_mode={args.t2_chunking_mode}, log_every={args.log_every}"
         ),
         flush=True,
     )
@@ -135,7 +141,12 @@ def main() -> int:
                     )
 
                 chunk_start_time = time.perf_counter()
-                chunks = chunk_document(document, chunk_size=args.chunk_size, overlap=args.overlap)
+                chunks = chunk_document(
+                    document,
+                    chunk_size=args.chunk_size,
+                    overlap=args.overlap,
+                    t2_chunking_mode=args.t2_chunking_mode,
+                )
                 chunk_elapsed = time.perf_counter() - chunk_start_time
                 chunk_count += len(chunks)
                 for chunk in chunks:

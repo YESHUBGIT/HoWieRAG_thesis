@@ -4,6 +4,7 @@ from typing import Dict, Iterable, Iterator, List, Tuple
 
 from howie_rag.core.schemas import Document
 from howie_rag.core.utils import stable_id
+from howie_rag.datasets.normalization import normalize_source_metadata
 from howie_rag.datasets.schemas import BenchmarkQARecord, SourceDocumentRecord
 from howie_rag.document_classification import classify_document_content
 
@@ -66,6 +67,13 @@ def _source_metadata(row: dict, file_path: Path, context_id: str, title: str, au
         "domain": domain,
         "context_id": context_id,
         "source_file": file_path.name,
+        **normalize_source_metadata(
+            dataset_name=DATASET_NAME,
+            domain=domain,
+            context_id=context_id,
+            title=title,
+            source_file=file_path.name,
+        ),
     }
     if title:
         metadata["title"] = title
@@ -86,6 +94,12 @@ def _qa_metadata(row: dict, file_path: Path, context_id: str, domain: str) -> di
         "domain": domain,
         "context_id": context_id,
         "source_file": file_path.name,
+        **normalize_source_metadata(
+            dataset_name=DATASET_NAME,
+            domain=domain,
+            context_id=context_id,
+            source_file=file_path.name,
+        ),
     }
     if "meta" in row:
         metadata["meta"] = row.get("meta")

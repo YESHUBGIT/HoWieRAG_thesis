@@ -39,6 +39,8 @@ def test_load_ultradomain_source_documents_from_single_file(tmp_path: Path) -> N
     assert records[0].domain == "cs"
     assert records[0].title == "Machine Learning with Spark"
     assert records[0].metadata["authors"] == "Nick Pentreath"
+    assert records[0].metadata["source_title"] == "Machine Learning with Spark"
+    assert records[0].metadata["source_domain"] == "cs"
 
 
 def test_load_ultradomain_benchmark_records_normalizes_answers_and_question_fallback(tmp_path: Path) -> None:

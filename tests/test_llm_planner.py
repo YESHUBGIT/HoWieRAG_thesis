@@ -5,6 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from howie_rag.core.schemas import Chunk
 from howie_rag.llm.base import BaseLLMClient
+from howie_rag.intent.llm_intent import LLMIntentClassifier
 from howie_rag.retrieval_planning.experiment_variants import retrieve_with_variant
 from howie_rag.retrieval_planning.llm_planner import LLMRetrievalPlanner
 
@@ -86,6 +87,45 @@ def test_llm_document_aware_variant_uses_llm_plan_for_table_preference() -> None
 
     assert output["detected_intent"] == "FACT"
     assert output["retrieval_plan"].preferred_chunk_types == ["table"]
+    assert output["matches"][0].chunk.chunk_id == "2"
+
+
+def test_llm_intent_document_aware_variant_uses_llm_intent_only() -> None:
+    classifier = LLMIntentClassifier(
+        FakeLLMClient('{"intent":"TREND_PATTERN","confidence":0.9,"reasoning":"trend query"}')
+    )
+    chunks = [
+        Chunk(
+            chunk_id="1",
+            doc_id="doc-1",
+            text="mobility narrative explanation",
+            metadata={"document_type": "narrative", "chunk_type": "narrative", "table_line_ratio": 0.0},
+        ),
+        Chunk(
+            chunk_id="2",
+            doc_id="doc-2",
+            text="mobility trend 2019 10 2020 12",
+            metadata={
+                "document_type": "mixed",
+                "has_tables": True,
+                "chunk_type": "table",
+                "has_table_like_content": True,
+                "table_line_ratio": 1.0,
+            },
+        ),
+    ]
+
+    output = retrieve_with_variant(
+        query="What trend do we see in student mobility?",
+        chunks=chunks,
+        retriever_name="keyword",
+        variant="llm_intent_document_aware",
+        llm_intent_classifier=classifier,
+        top_k=1,
+        candidate_pool_size=2,
+    )
+
+    assert output["detected_intent"] == "TREND_PATTERN"
     assert output["matches"][0].chunk.chunk_id == "2"
 
 

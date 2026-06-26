@@ -17,7 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run UltraDomain retrieval evaluation.")
     parser.add_argument("questions", help="Prepared UltraDomain questions.jsonl path")
     parser.add_argument("chunks", help="Built UltraDomain chunks.jsonl path")
-    parser.add_argument("retriever", choices=["keyword", "bm25"], help="Retriever to evaluate")
+    parser.add_argument("retriever", choices=["keyword", "bm25", "field_bm25"], help="Retriever to evaluate")
     parser.add_argument("output_dir", help="Output directory for evaluation results")
     parser.add_argument("--log-every", type=int, default=25)
     parser.add_argument("--max-questions", type=int)
@@ -72,6 +72,7 @@ def main() -> int:
     print(f"Hit@5: {results['hit_at_5']:.4f}", flush=True)
     print(f"MRR@5: {results['mrr_at_5']:.4f}", flush=True)
     print(f"Precision@1: {results['precision_at_1']:.4f}", flush=True)
+    print(f"Oracle candidate hit rate: {results['oracle_candidate_hit_rate']:.4f}", flush=True)
     print(f"JSON results: {json_path}", flush=True)
     print(f"CSV results: {csv_path}", flush=True)
     return 0

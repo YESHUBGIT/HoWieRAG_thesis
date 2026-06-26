@@ -6,6 +6,7 @@ from typing import Callable, Dict, List, Optional
 
 from howie_rag.core.schemas import Chunk
 from howie_rag.datasets.schemas import BenchmarkQARecord
+from howie_rag.intent.llm_intent import LLMIntentClassifier
 from howie_rag.intent.rule_based import RuleBasedIntentClassifier
 from howie_rag.retrieval.factory import create_retriever
 from howie_rag.retrieval_planning.llm_planner import LLMRetrievalPlanner
@@ -38,6 +39,13 @@ def _is_correct_match(benchmark: BenchmarkQARecord, chunk: Chunk) -> bool:
     same_doc = chunk.doc_id == benchmark.gold_doc_id
     same_context = chunk.metadata.get("context_id") == benchmark.gold_context_id
     return same_doc or same_context
+
+
+def _first_correct_candidate_rank(benchmark: BenchmarkQARecord, candidate_matches: List) -> Optional[int]:
+    for rank, match in enumerate(candidate_matches, start=1):
+        if _is_correct_match(benchmark, match.chunk):
+            return rank
+    return None
 
 
 def _render_progress(current: int, total: int, width: int = 30) -> str:
@@ -81,6 +89,7 @@ def _build_results_snapshot(
     mrr_at_5_total: float,
     precision_at_1_total: float,
     retrieved_chunks_total: float,
+    oracle_candidate_hit_total: float,
     per_question_results: List[Dict[str, object]],
 ) -> Dict[str, object]:
     total = question_count or 1
@@ -93,6 +102,7 @@ def _build_results_snapshot(
         "mrr_at_5": mrr_at_5_total / total,
         "precision_at_1": precision_at_1_total / total,
         "average_retrieved_chunks_per_question": retrieved_chunks_total / total,
+        "oracle_candidate_hit_rate": oracle_candidate_hit_total / total,
         "per_question": per_question_results,
     }
 
@@ -107,6 +117,7 @@ def evaluate_ultradomain_retrieval(
     log_every: int = 25,
     save_every: Optional[int] = None,
     checkpoint_callback: Optional[Callable[[Dict[str, object]], None]] = None,
+    llm_intent_classifier: Optional[LLMIntentClassifier] = None,
     llm_planner: Optional[LLMRetrievalPlanner] = None,
 ) -> Dict[str, object]:
     intent_classifier = RuleBasedIntentClassifier()
@@ -121,6 +132,7 @@ def evaluate_ultradomain_retrieval(
     mrr_at_5_total = 0.0
     precision_at_1_total = 0.0
     retrieved_chunks_total = 0.0
+    oracle_candidate_hit_total = 0.0
     question_count = len(benchmark_records)
     start_time = time.perf_counter()
 
@@ -142,15 +154,19 @@ def evaluate_ultradomain_retrieval(
             variant=variant,
             retriever=retriever,
             intent_classifier=intent_classifier,
+            llm_intent_classifier=llm_intent_classifier,
             llm_planner=llm_planner,
             top_k=top_k,
             candidate_pool_size=candidate_pool_size,
         )
         matches = retrieval_output["matches"]
+        candidate_matches = retrieval_output.get("candidate_matches", matches)
         retrieval_plan = retrieval_output["retrieval_plan"]
         predicted_intent = retrieval_output["detected_intent"]
         if predicted_intent is None:
             predicted_intent = intent_classifier.classify(record.question).intent
+
+        first_correct_candidate_rank = _first_correct_candidate_rank(record, candidate_matches)
 
         hit_at_1 = 1.0 if matches and _is_correct_match(record, matches[0].chunk) else 0.0
         hit_at_5 = 0.0
@@ -163,12 +179,14 @@ def evaluate_ultradomain_retrieval(
                 break
 
         precision_at_1 = hit_at_1
+        oracle_candidate_hit = 1.0 if any(_is_correct_match(record, match.chunk) for match in candidate_matches) else 0.0
 
         hit_at_1_total += hit_at_1
         hit_at_5_total += hit_at_5
         mrr_at_5_total += reciprocal_rank
         precision_at_1_total += precision_at_1
         retrieved_chunks_total += len(matches)
+        oracle_candidate_hit_total += oracle_candidate_hit
 
         per_question_results.append(
             {
@@ -183,6 +201,20 @@ def evaluate_ultradomain_retrieval(
                 "hit_at_5": hit_at_5,
                 "mrr_at_5": reciprocal_rank,
                 "precision_at_1": precision_at_1,
+                "oracle_candidate_hit": oracle_candidate_hit,
+                "first_correct_candidate_rank": first_correct_candidate_rank,
+                "candidate_pool_size": len(candidate_matches),
+                "candidate_retrieved": [
+                    {
+                        "chunk_id": match.chunk.chunk_id,
+                        "doc_id": match.chunk.doc_id,
+                        "context_id": match.chunk.metadata.get("context_id"),
+                        "title": match.chunk.metadata.get("title"),
+                        "is_correct": _is_correct_match(record, match.chunk),
+                        "original_score": match.original_score if match.original_score is not None else match.score,
+                    }
+                    for match in candidate_matches
+                ],
                 "retrieved": [
                     {
                         "chunk_id": match.chunk.chunk_id,
@@ -217,6 +249,7 @@ def evaluate_ultradomain_retrieval(
                     mrr_at_5_total=mrr_at_5_total,
                     precision_at_1_total=precision_at_1_total,
                     retrieved_chunks_total=retrieved_chunks_total,
+                    oracle_candidate_hit_total=oracle_candidate_hit_total,
                     per_question_results=per_question_results,
                 )
             )
@@ -230,6 +263,7 @@ def evaluate_ultradomain_retrieval(
         mrr_at_5_total=mrr_at_5_total,
         precision_at_1_total=precision_at_1_total,
         retrieved_chunks_total=retrieved_chunks_total,
+        oracle_candidate_hit_total=oracle_candidate_hit_total,
         per_question_results=per_question_results,
     )
 
@@ -239,12 +273,12 @@ def save_retrieval_results(results: Dict[str, object], json_path: str, csv_path:
 
     per_question = results.get("per_question", [])
     csv_lines = [
-        "question_id,question,predicted_intent,gold_doc_id,gold_context_id,hit_at_1,hit_at_5,mrr_at_5,precision_at_1"
+        "question_id,question,predicted_intent,gold_doc_id,gold_context_id,hit_at_1,hit_at_5,mrr_at_5,precision_at_1,oracle_candidate_hit,first_correct_candidate_rank,candidate_pool_size"
     ]
     for item in per_question:
         question = str(item["question"]).replace('"', '""')
         csv_lines.append(
-            f'{item["question_id"]},"{question}",{item["predicted_intent"]},{item["gold_doc_id"]},{item["gold_context_id"]},{item["hit_at_1"]},{item["hit_at_5"]},{item["mrr_at_5"]},{item["precision_at_1"]}'
+            f'{item["question_id"]},"{question}",{item["predicted_intent"]},{item["gold_doc_id"]},{item["gold_context_id"]},{item["hit_at_1"]},{item["hit_at_5"]},{item["mrr_at_5"]},{item["precision_at_1"]},{item.get("oracle_candidate_hit", 0.0)},{item.get("first_correct_candidate_rank", "")},{item.get("candidate_pool_size", 0)}'
         )
     Path(csv_path).write_text("\n".join(csv_lines), encoding="utf-8")
 

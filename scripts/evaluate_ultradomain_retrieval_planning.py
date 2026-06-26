@@ -14,6 +14,7 @@ from howie_rag.evaluation.ultradomain_retrieval import (
     save_retrieval_results,
     select_benchmark_records,
 )
+from howie_rag.intent.llm_intent import LLMIntentClassifier
 from howie_rag.llm.vllm_client import VLLMClient
 from howie_rag.retrieval_planning.llm_planner import LLMRetrievalPlanner
 
@@ -26,10 +27,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run UltraDomain retrieval planning experiments.")
     parser.add_argument("--questions", required=True, help="Prepared UltraDomain questions.jsonl path")
     parser.add_argument("--chunks", required=True, help="Built UltraDomain chunks.jsonl path")
-    parser.add_argument("--retriever", choices=["keyword", "bm25"], required=True)
+    parser.add_argument("--retriever", choices=["keyword", "bm25", "field_bm25"], required=True)
     parser.add_argument(
         "--variant",
-        choices=["naive", "document_aware", "intent_document_aware", "llm_document_aware", "all"],
+        choices=[
+            "naive",
+            "document_aware",
+            "intent_document_aware",
+            "llm_intent_document_aware",
+            "llm_document_aware",
+            "intent_guided_retrieval",
+            "llm_guided_retrieval",
+            "all",
+            "all_core",
+            "all_non_llm",
+            "all_llm",
+            "all_full",
+        ],
         required=True,
     )
     parser.add_argument("--top-k", type=int, default=5)
@@ -42,6 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--planner-base-url", default=DEFAULT_PLANNER_BASE_URL)
     parser.add_argument("--planner-model", default=DEFAULT_PLANNER_MODEL)
     parser.add_argument("--planner-max-tokens", type=int, default=300)
+    parser.add_argument("--output-dir", default="evaluation_results/ultradomain")
     return parser
 
 
@@ -56,16 +71,38 @@ def main() -> int:
     )
     chunks = load_chunk_records(args.chunks)
 
-    output_dir = Path("evaluation_results/ultradomain")
+    output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    variants = [args.variant] if args.variant != "all" else ["naive", "document_aware", "intent_document_aware"]
+    if args.variant in {"all", "all_core"}:
+        variants = ["naive", "document_aware", "intent_document_aware"]
+    elif args.variant == "all_non_llm":
+        variants = ["naive", "document_aware", "intent_document_aware", "intent_guided_retrieval"]
+    elif args.variant == "all_llm":
+        variants = ["llm_intent_document_aware", "llm_document_aware", "llm_guided_retrieval"]
+    elif args.variant == "all_full":
+        variants = [
+            "naive",
+            "document_aware",
+            "intent_document_aware",
+            "intent_guided_retrieval",
+            "llm_intent_document_aware",
+            "llm_document_aware",
+            "llm_guided_retrieval",
+        ]
+    else:
+        variants = [args.variant]
     comparison_rows = []
     llm_planner = None
-    if args.variant == "llm_document_aware":
+    llm_intent_classifier = None
+    if any(variant in {"llm_document_aware", "llm_guided_retrieval"} for variant in variants):
         llm_planner = LLMRetrievalPlanner(
             VLLMClient(base_url=args.planner_base_url, model_name=args.planner_model),
             max_tokens=args.planner_max_tokens,
+        )
+    if any(variant == "llm_intent_document_aware" for variant in variants):
+        llm_intent_classifier = LLMIntentClassifier(
+            VLLMClient(base_url=args.planner_base_url, model_name=args.planner_model),
         )
 
     for variant in variants:
@@ -94,6 +131,7 @@ def main() -> int:
             log_every=args.log_every,
             save_every=args.save_every,
             checkpoint_callback=save_partial if args.save_every else None,
+            llm_intent_classifier=llm_intent_classifier,
             llm_planner=llm_planner,
         )
 
@@ -109,6 +147,7 @@ def main() -> int:
                 "hit_at_5": results["hit_at_5"],
                 "mrr_at_5": results["mrr_at_5"],
                 "precision_at_1": results["precision_at_1"],
+                "oracle_candidate_hit_rate": results["oracle_candidate_hit_rate"],
                 "average_retrieved_chunks_per_question": results["average_retrieved_chunks_per_question"],
             }
         )
@@ -118,6 +157,7 @@ def main() -> int:
         print(f"  Hit@5: {results['hit_at_5']:.4f}", flush=True)
         print(f"  MRR@5: {results['mrr_at_5']:.4f}", flush=True)
         print(f"  Precision@1: {results['precision_at_1']:.4f}", flush=True)
+        print(f"  Oracle candidate hit rate: {results['oracle_candidate_hit_rate']:.4f}", flush=True)
 
     comparison_path = output_dir / "ultradomain_retrieval_comparison.csv"
     with comparison_path.open("w", encoding="utf-8", newline="") as file_handle:
@@ -131,6 +171,7 @@ def main() -> int:
                 "hit_at_5",
                 "mrr_at_5",
                 "precision_at_1",
+                "oracle_candidate_hit_rate",
                 "average_retrieved_chunks_per_question",
             ],
         )

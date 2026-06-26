@@ -11,6 +11,12 @@ evaluation_results/
 ultradomain_processed/
 ultradomain_index/
 ultradomain_results/
+t2_ragbench_processed/
+t2_ragbench_processed_test/
+t2_ragbench_index/
+t2_ragbench_index_flat/
+t2_ragbench_index_structured/
+t2_ragbench_results/
 *.tar.gz
 .DS_Store
 .idea/

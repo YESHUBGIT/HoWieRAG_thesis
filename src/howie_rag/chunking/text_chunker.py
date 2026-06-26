@@ -1,11 +1,27 @@
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from howie_rag.core.schemas import Chunk, Document
 from howie_rag.core.utils import stable_id
 
 
-def _chunk_metadata(document: Document, chunk_index: int, chunk_text: str, start_index: int, end_index: int) -> dict:
+def _document_chunk_base_metadata(document: Document) -> dict:
+    metadata = dict(document.metadata)
+    if metadata.get("source_type") == "t2_ragbench_context":
+        metadata.pop("table", None)
+        metadata.pop("pre_text", None)
+        metadata.pop("post_text", None)
+    return metadata
+
+
+def _chunk_metadata(
+    document: Document,
+    chunk_index: int,
+    chunk_text: str,
+    start_index: int,
+    end_index: int,
+    metadata_overrides: Optional[dict] = None,
+) -> dict:
     lines = [line.strip() for line in chunk_text.splitlines() if line.strip()]
     table_line_count = sum(1 for line in lines if _is_table_like_line(line))
     line_count = len(lines)
@@ -18,7 +34,7 @@ def _chunk_metadata(document: Document, chunk_index: int, chunk_text: str, start
     else:
         chunk_type = "mixed"
 
-    return {
+    metadata = {
         "title": document.title,
         "chunk_index": chunk_index,
         "start_index": start_index,
@@ -28,8 +44,11 @@ def _chunk_metadata(document: Document, chunk_index: int, chunk_text: str, start
         "table_line_count": table_line_count,
         "line_count": line_count,
         "table_line_ratio": round(table_ratio, 4),
-        **document.metadata,
     }
+    metadata.update(_document_chunk_base_metadata(document))
+    if metadata_overrides:
+        metadata.update(metadata_overrides)
+    return metadata
 
 
 def _append_chunk(
@@ -39,6 +58,7 @@ def _append_chunk(
     chunk_text: str,
     start_index: int,
     end_index: int,
+    metadata_overrides: Optional[dict] = None,
 ) -> int:
     normalized_text = chunk_text.strip()
     if not normalized_text:
@@ -49,14 +69,27 @@ def _append_chunk(
             chunk_id=stable_id(f"{document.doc_id}:{chunk_index}:{normalized_text}"),
             doc_id=document.doc_id,
             text=normalized_text,
-            metadata=_chunk_metadata(document, chunk_index, normalized_text, start_index, end_index),
+            metadata=_chunk_metadata(
+                document,
+                chunk_index,
+                normalized_text,
+                start_index,
+                end_index,
+                metadata_overrides=metadata_overrides,
+            ),
         )
     )
     return chunk_index + 1
 
 
 def _chunk_text_fixed(
-    document: Document, text: str, chunk_size: int, overlap: int, start_offset: int = 0, chunk_index: int = 0
+    document: Document,
+    text: str,
+    chunk_size: int,
+    overlap: int,
+    start_offset: int = 0,
+    chunk_index: int = 0,
+    metadata_overrides: Optional[dict] = None,
 ) -> Tuple[List[Chunk], int]:
     chunks: List[Chunk] = []
     start_index = 0
@@ -72,6 +105,7 @@ def _chunk_text_fixed(
             chunk_text,
             start_offset + start_index,
             start_offset + end_index,
+            metadata_overrides=metadata_overrides,
         )
 
         if end_index == len(text):
@@ -170,13 +204,22 @@ def _chunk_table_block(
     block_end: int,
     chunk_size: int,
     chunk_index: int,
+    metadata_overrides: Optional[dict] = None,
 ) -> Tuple[List[Chunk], int]:
     lines = [line.rstrip() for line in block_text.splitlines() if line.strip()]
     if not lines:
         return [], chunk_index
     if len(block_text) <= chunk_size:
         chunks: List[Chunk] = []
-        chunk_index = _append_chunk(chunks, document, chunk_index, block_text, block_start, block_end)
+        chunk_index = _append_chunk(
+            chunks,
+            document,
+            chunk_index,
+            block_text,
+            block_start,
+            block_end,
+            metadata_overrides=metadata_overrides,
+        )
         return chunks, chunk_index
 
     header_line_count = _table_header_line_count(lines)
@@ -193,11 +236,27 @@ def _chunk_table_block(
             current_lines = candidate_lines
             continue
 
-        chunk_index = _append_chunk(chunks, document, chunk_index, "\n".join(current_lines), block_start, block_end)
+        chunk_index = _append_chunk(
+            chunks,
+            document,
+            chunk_index,
+            "\n".join(current_lines),
+            block_start,
+            block_end,
+            metadata_overrides=metadata_overrides,
+        )
         current_lines = list(header_lines) + [line]
 
     if current_lines:
-        chunk_index = _append_chunk(chunks, document, chunk_index, "\n".join(current_lines), block_start, block_end)
+        chunk_index = _append_chunk(
+            chunks,
+            document,
+            chunk_index,
+            "\n".join(current_lines),
+            block_start,
+            block_end,
+            metadata_overrides=metadata_overrides,
+        )
 
     return chunks, chunk_index
 
@@ -234,17 +293,91 @@ def _chunk_text_table_aware(document: Document, text: str, chunk_size: int, over
     return chunks
 
 
-def chunk_document(document: Document, chunk_size: int = 300, overlap: int = 50) -> List[Chunk]:
+def _structured_t2_sections(document: Document) -> List[Dict[str, object]]:
+    metadata = document.metadata
+    if metadata.get("source_type") != "t2_ragbench_context":
+        return []
+
+    sections: List[Dict[str, object]] = []
+    running_offset = 0
+    for section_name, section_type in (("pre_text", "narrative"), ("table", "table"), ("post_text", "narrative")):
+        section_text = metadata.get(section_name)
+        if not isinstance(section_text, str) or not section_text.strip():
+            continue
+        normalized_text = section_text.strip()
+        section_length = len(normalized_text)
+        section_metadata = {
+            "source_section": section_name,
+            "table": normalized_text if section_name == "table" else "",
+            "pre_text": normalized_text if section_name == "pre_text" else "",
+            "post_text": normalized_text if section_name == "post_text" else "",
+            "has_explicit_table": section_name == "table" or bool(metadata.get("has_explicit_table")),
+        }
+        sections.append(
+            {
+                "name": section_name,
+                "type": section_type,
+                "text": normalized_text,
+                "start": running_offset,
+                "end": running_offset + section_length,
+                "metadata_overrides": section_metadata,
+            }
+        )
+        running_offset += section_length + 2
+    return sections
+
+
+def _chunk_structured_t2_document(document: Document, chunk_size: int, overlap: int) -> List[Chunk]:
+    sections = _structured_t2_sections(document)
+    chunks: List[Chunk] = []
+    chunk_index = 0
+    for section in sections:
+        if section["type"] == "table":
+            section_chunks, chunk_index = _chunk_table_block(
+                document,
+                str(section["text"]),
+                int(section["start"]),
+                int(section["end"]),
+                chunk_size,
+                chunk_index,
+                metadata_overrides=dict(section["metadata_overrides"]),
+            )
+        else:
+            section_chunks, chunk_index = _chunk_text_fixed(
+                document,
+                str(section["text"]),
+                chunk_size,
+                overlap,
+                start_offset=int(section["start"]),
+                chunk_index=chunk_index,
+                metadata_overrides=dict(section["metadata_overrides"]),
+            )
+        chunks.extend(section_chunks)
+    return chunks
+
+
+def chunk_document(
+    document: Document,
+    chunk_size: int = 300,
+    overlap: int = 50,
+    t2_chunking_mode: str = "structured",
+) -> List[Chunk]:
     if chunk_size <= 0:
         raise ValueError("chunk_size must be greater than 0")
     if overlap < 0:
         raise ValueError("overlap must be 0 or greater")
     if overlap >= chunk_size:
         raise ValueError("overlap must be smaller than chunk_size")
+    if t2_chunking_mode not in {"structured", "flat"}:
+        raise ValueError("t2_chunking_mode must be 'structured' or 'flat'")
 
     text = document.text.strip()
     if not text:
         return []
+
+    structured_t2_sections = _structured_t2_sections(document) if t2_chunking_mode == "structured" else []
+    if structured_t2_sections:
+        return _chunk_structured_t2_document(document, chunk_size=chunk_size, overlap=overlap)
 
     if _has_table_structure(text):
         return _chunk_text_table_aware(document, text, chunk_size=chunk_size, overlap=overlap)
@@ -254,9 +387,19 @@ def chunk_document(document: Document, chunk_size: int = 300, overlap: int = 50)
 
 
 def chunk_documents(
-    documents: List[Document], chunk_size: int = 300, overlap: int = 50
+    documents: List[Document],
+    chunk_size: int = 300,
+    overlap: int = 50,
+    t2_chunking_mode: str = "structured",
 ) -> List[Chunk]:
     chunks: List[Chunk] = []
     for document in documents:
-        chunks.extend(chunk_document(document, chunk_size=chunk_size, overlap=overlap))
+        chunks.extend(
+            chunk_document(
+                document,
+                chunk_size=chunk_size,
+                overlap=overlap,
+                t2_chunking_mode=t2_chunking_mode,
+            )
+        )
     return chunks
